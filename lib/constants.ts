@@ -1,11 +1,12 @@
 import type { Badge, BadgeKind } from "@/types";
 
 export const APP_NAME = "Office Poker Club";
-export const STORAGE_KEY = "office-poker-club-state-v4";
+export const STORAGE_KEY = "office-poker-club-state-v5";
 export const LEGACY_STORAGE_KEYS = [
   "office-poker-club-state-v1",
   "office-poker-club-state-v2",
   "office-poker-club-state-v3",
+  "office-poker-club-state-v4",
 ];
 
 export const BADGES: Record<BadgeKind, Badge> = {

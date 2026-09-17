@@ -69,26 +69,28 @@ export default function SettingsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-1.5">
-              <Label>Место по умолчанию</Label>
-              <Select
-                value={state.settings.defaultVenueId}
-                onValueChange={(value) =>
-                  value && actions.updateSettings({ defaultVenueId: String(value) })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {state.venues.map((venue) => (
-                    <SelectItem key={venue.id} value={venue.id}>
-                      {venue.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {state.venues.length > 0 && (
+              <div className="grid gap-1.5">
+                <Label>Место по умолчанию</Label>
+                <Select
+                  value={state.settings.defaultVenueId}
+                  onValueChange={(value) =>
+                    value && actions.updateSettings({ defaultVenueId: String(value) })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {state.venues.map((venue) => (
+                      <SelectItem key={venue.id} value={venue.id}>
+                        {venue.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="season">Начало сезона</Label>
@@ -158,7 +160,7 @@ export default function SettingsPage() {
           </p>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setResetOpen(true)}>
-              Сбросить демо-данные
+              Сбросить данные клуба
             </Button>
             <Button
               variant="outline"
@@ -177,12 +179,12 @@ export default function SettingsPage() {
         open={resetOpen}
         onOpenChange={setResetOpen}
         title="Сбросить данные?"
-        description="Локальные изменения исчезнут, клуб вернётся к исходным mock-данным."
+        description="Игры, участники и рейтинг на этом устройстве будут удалены."
         confirmLabel="Сбросить"
         destructive
         onConfirm={() => {
           actions.reset();
-          toast.success("Демо-данные восстановлены");
+          toast.success("Клуб очищен");
         }}
       />
     </div>

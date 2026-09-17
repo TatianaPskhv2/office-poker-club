@@ -24,7 +24,7 @@ const EMPTY: CreateGameInput = {
   title: "",
   date: "",
   startTime: "19:00",
-  duration: 180,
+  duration: 3,
   venueId: "",
   venueName: "",
   address: "",
@@ -123,7 +123,7 @@ export function GameForm({
         <Input
           value={values.title}
           onChange={(event) => set("title", event.target.value)}
-          placeholder="Пятница в «Бай-ине»"
+          placeholder="Пятничный стол"
           aria-invalid={Boolean(errors.title)}
         />
       </Field>
@@ -146,10 +146,11 @@ export function GameForm({
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Длительность, мин" error={errors.duration}>
+        <Field label="Длительность, часы" error={errors.duration}>
           <Input
             type="number"
-            min={30}
+            min={1}
+            max={12}
             value={values.duration}
             onChange={(event) => set("duration", Number(event.target.value))}
           />
@@ -164,31 +165,19 @@ export function GameForm({
           />
         </Field>
       </div>
-      <Field label="Место проведения" error={errors.venueId}>
-        <Select
-          value={values.venueId}
-          onValueChange={(value) => {
-            if (!value) return;
-            const venue = state.venues.find((item) => item.id === String(value));
+      <Field label="Место проведения" error={errors.venueName}>
+        <Input
+          value={values.venueName}
+          onChange={(event) => {
             setValues((prev) => ({
               ...prev,
-              venueId: String(value),
-              venueName: venue?.name ?? prev.venueName,
-              address: venue?.address ?? prev.address,
+              venueId: "",
+              venueName: event.target.value,
             }));
           }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Выберите место" />
-          </SelectTrigger>
-          <SelectContent>
-            {state.venues.map((venue) => (
-              <SelectItem key={venue.id} value={venue.id}>
-                {venue.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Кухня, переговорка, бар"
+          aria-invalid={Boolean(errors.venueName)}
+        />
       </Field>
       <Field label="Адрес или описание места" error={errors.address}>
         <Input
