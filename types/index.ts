@@ -121,6 +121,7 @@ export type AppSettings = {
   seasonStart: string;
   notifyByDefault: boolean;
   dataMode: "mock" | "supabase";
+  dataRevision?: number;
 };
 
 export type ClubState = {

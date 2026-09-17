@@ -1,12 +1,16 @@
 import { STARTING_RATING, scoreGameResult } from "@/lib/rating";
 import { BADGES } from "@/lib/constants";
+import recoveredClub from "@/lib/data/club-seed.json";
 import type {
   BadgeKind,
   ClubState,
+  Game,
+  GameParticipant,
   GameResult,
   GameStatus,
   Player,
   RatingHistory,
+  User,
 } from "@/types";
 
 type PlayerSeed = Omit<
@@ -199,42 +203,24 @@ export function recomputeClubState(state: ClubState): ClubState {
 }
 
 export function createSeedState(): ClubState {
-  const admin = emptyPlayer({
-    id: "p-tanya",
-    userId: "u-tanya",
-    name: "Татьяна Посохова",
-    department: "",
-    jobTitle: "Администратор",
-    email: "romanenko-1007@mail.ru",
-    role: "admin",
-    joinedAt: "2025-01-10",
-  });
-
   return recomputeClubState({
-    users: [
-      {
-        id: "u-tanya",
-        playerId: "p-tanya",
-        email: "romanenko-1007@mail.ru",
-        name: "Татьяна Посохова",
-        role: "admin",
-      },
-    ],
-    currentUserId: "u-tanya",
-    players: [admin],
+    users: recoveredClub.users as User[],
+    currentUserId: recoveredClub.currentUserId,
+    players: recoveredClub.players.map((player) => emptyPlayer(player as PlayerSeed)),
     venues: [],
-    games: [],
-    participants: [],
+    games: recoveredClub.games as Game[],
+    participants: recoveredClub.participants as GameParticipant[],
     results: [],
     ratingHistory: [],
     notifications: [],
     settings: {
-      teamName: "Office Poker Club",
-      defaultCurrency: "₽",
+      teamName: recoveredClub.settings.teamName,
+      defaultCurrency: recoveredClub.settings.defaultCurrency,
       defaultVenueId: "",
-      seasonStart: "2026-01-01",
-      notifyByDefault: true,
+      seasonStart: recoveredClub.settings.seasonStart,
+      notifyByDefault: recoveredClub.settings.notifyByDefault,
       dataMode: "mock",
+      dataRevision: recoveredClub.settings.dataRevision,
     },
   });
 }

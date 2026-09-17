@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useSyncExternalStore } from "react";
-import { LEGACY_STORAGE_KEYS, STORAGE_KEY } from "@/lib/constants";
+import { LEGACY_STORAGE_KEYS, SEED_REVISION, STORAGE_KEY } from "@/lib/constants";
 import { createSeedState, recomputeClubState } from "@/lib/data/seed";
 import { getCurrentUser } from "@/lib/data/selectors";
 import { durationInHours } from "@/lib/format";
@@ -75,6 +75,9 @@ function readStorage(): ClubState {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return seed;
     const parsed = JSON.parse(raw) as ClubState;
+    if ((parsed.settings?.dataRevision ?? 0) < SEED_REVISION) {
+      return seed;
+    }
     return recomputeClubState(migrateState({ ...seed, ...parsed }));
   } catch {
     return seed;

@@ -1,0 +1,303 @@
+{
+  "users": [
+    {
+      "id": "u-tanya",
+      "playerId": "p-tanya",
+      "email": "romanenko-1007@mail.ru",
+      "name": "Татьяна Посохова",
+      "role": "admin"
+    },
+    {
+      "id": "u-judo4qzqcq",
+      "playerId": "p-y7yqdczqcq",
+      "email": "p-y7yqdczqcq@office.poker",
+      "name": "Журавлев Максим",
+      "role": "member"
+    },
+    {
+      "id": "u-nsoob41cyk",
+      "playerId": "p-q8yk2d1cyk",
+      "email": "p-q8yk2d1cyk@office.poker",
+      "name": "Житков Евгений",
+      "role": "member"
+    },
+    {
+      "id": "u-3x4prg2oe2",
+      "playerId": "p-ly5ic02oe2",
+      "email": "p-ly5ic02oe2@office.poker",
+      "name": "Пискунов Михаил",
+      "role": "member"
+    },
+    {
+      "id": "u-7hjmd53t2r",
+      "playerId": "p-0zzuz03t2r",
+      "email": "p-0zzuz03t2r@office.poker",
+      "name": "Маркова Нина",
+      "role": "member"
+    },
+    {
+      "id": "u-gz9ier4q7p",
+      "playerId": "p-twj7sy4q7p",
+      "email": "p-twj7sy4q7p@office.poker",
+      "name": "Чупров Дмитрий",
+      "role": "member"
+    },
+    {
+      "id": "u-cs5c3p60wq",
+      "playerId": "p-jesye660wq",
+      "email": "p-jesye660wq@office.poker",
+      "name": "Мальцев Владимир",
+      "role": "member"
+    },
+    {
+      "id": "u-q82a656y3n",
+      "playerId": "p-lhdmio6y3n",
+      "email": "p-lhdmio6y3n@office.poker",
+      "name": "Александр Змеев",
+      "role": "member"
+    },
+    {
+      "id": "u-moon057s3b",
+      "playerId": "p-dnrwkx7s3b",
+      "email": "p-dnrwkx7s3b@office.poker",
+      "name": "Бычок Тимофей",
+      "role": "member"
+    },
+    {
+      "id": "u-ui9l8d8j7o",
+      "playerId": "p-stzgnj8j7o",
+      "email": "p-stzgnj8j7o@office.poker",
+      "name": "Спицын Иван",
+      "role": "member"
+    },
+    {
+      "id": "u-qk9plf95df",
+      "playerId": "p-z4c8wa95df",
+      "email": "p-z4c8wa95df@office.poker",
+      "name": "Волков Ярослав",
+      "role": "member"
+    },
+    {
+      "id": "u-zdv4g1af0n",
+      "playerId": "p-dvaqybaf0n",
+      "email": "p-dvaqybaf0n@office.poker",
+      "name": "Николай Кузнецов",
+      "role": "member"
+    }
+  ],
+  "currentUserId": "u-tanya",
+  "players": [
+    {
+      "id": "p-tanya",
+      "userId": "u-tanya",
+      "name": "Татьяна Посохова",
+      "department": "Отдел персонала",
+      "jobTitle": "HR/Администратор",
+      "email": "romanenko-1007@mail.ru",
+      "role": "admin",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-y7yqdczqcq",
+      "userId": "u-judo4qzqcq",
+      "name": "Журавлев Максим",
+      "department": "Проектный департамент",
+      "jobTitle": "Руководитель отдела",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-q8yk2d1cyk",
+      "userId": "u-nsoob41cyk",
+      "name": "Житков Евгений",
+      "department": "Администрация",
+      "jobTitle": "РОФ",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-ly5ic02oe2",
+      "userId": "u-3x4prg2oe2",
+      "name": "Пискунов Михаил",
+      "department": "Группа внедрения АРТ",
+      "jobTitle": "Младший программист",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-0zzuz03t2r",
+      "userId": "u-7hjmd53t2r",
+      "name": "Маркова Нина",
+      "department": "Группа по работе со строительными клиентами",
+      "jobTitle": "Стажер",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-twj7sy4q7p",
+      "userId": "u-gz9ier4q7p",
+      "name": "Чупров Дмитрий",
+      "department": "Отдел ИТС №1",
+      "jobTitle": "Сервис-инженер ИТС",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-jesye660wq",
+      "userId": "u-cs5c3p60wq",
+      "name": "Мальцев Владимир",
+      "department": "Группа продаж АРТ и складского учета",
+      "jobTitle": "Менеджер проектов",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-lhdmio6y3n",
+      "userId": "u-q82a656y3n",
+      "name": "Александр Змеев",
+      "department": "Отдел ИТС №1",
+      "jobTitle": "Сервис-инженер ИТС",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-dnrwkx7s3b",
+      "userId": "u-moon057s3b",
+      "name": "Бычок Тимофей",
+      "department": "Проектная группа №1",
+      "jobTitle": "Программист",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-stzgnj8j7o",
+      "userId": "u-ui9l8d8j7o",
+      "name": "Спицын Иван",
+      "department": "Группа внедрения АРТ",
+      "jobTitle": "Программист",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-z4c8wa95df",
+      "userId": "u-qk9plf95df",
+      "name": "Волков Ярослав",
+      "department": "Группа внедрения АРТ",
+      "jobTitle": "Программист",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    },
+    {
+      "id": "p-dvaqybaf0n",
+      "userId": "u-zdv4g1af0n",
+      "name": "Николай Кузнецов",
+      "department": "Проектная группа №1",
+      "jobTitle": "Руководитель проектов",
+      "role": "member",
+      "joinedAt": "2026-09-17"
+    }
+  ],
+  "venues": [],
+  "games": [
+    {
+      "id": "g-r4o18qbnll",
+      "title": "Покер. Весь офис",
+      "date": "2026-09-18",
+      "startTime": "19:00",
+      "duration": 5,
+      "venueId": "",
+      "venueName": "Комната отдыха персонала",
+      "address": "Офис, комната отдыха персонала",
+      "organizerId": "p-tanya",
+      "participantLimit": 12,
+      "buyIn": 1000,
+      "currency": "₽",
+      "status": "open",
+      "notes": "",
+      "allowLateJoin": false,
+      "notifyParticipants": false,
+      "createdAt": "2026-09-17T13:25:47.193Z",
+      "updatedAt": "2026-09-17T15:06:03.017Z"
+    }
+  ],
+  "participants": [
+    {
+      "id": "gp-6n1odabpbh",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-y7yqdczqcq",
+      "joinedAt": "2026-09-17T13:53:49.037Z"
+    },
+    {
+      "id": "gp-7jv209br3z",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-q8yk2d1cyk",
+      "joinedAt": "2026-09-17T13:53:51.359Z"
+    },
+    {
+      "id": "gp-brfa38c3ae",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-ly5ic02oe2",
+      "joinedAt": "2026-09-17T13:54:07.142Z"
+    },
+    {
+      "id": "gp-7j5u6vc571",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-0zzuz03t2r",
+      "joinedAt": "2026-09-17T13:54:09.613Z"
+    },
+    {
+      "id": "gp-letoyqc6hx",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-twj7sy4q7p",
+      "joinedAt": "2026-09-17T13:54:11.301Z"
+    },
+    {
+      "id": "gp-ieh3htc7t0",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-jesye660wq",
+      "joinedAt": "2026-09-17T13:54:12.996Z"
+    },
+    {
+      "id": "gp-22751sc959",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-lhdmio6y3n",
+      "joinedAt": "2026-09-17T13:54:14.733Z"
+    },
+    {
+      "id": "gp-48wvqycagb",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-dnrwkx7s3b",
+      "joinedAt": "2026-09-17T13:54:16.427Z"
+    },
+    {
+      "id": "gp-v4zxp2cbo7",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-stzgnj8j7o",
+      "joinedAt": "2026-09-17T13:54:18.007Z"
+    },
+    {
+      "id": "gp-c6yc8qccxk",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-z4c8wa95df",
+      "joinedAt": "2026-09-17T13:54:19.640Z"
+    },
+    {
+      "id": "gp-ze2ajxce2o",
+      "gameId": "g-r4o18qbnll",
+      "playerId": "p-dvaqybaf0n",
+      "joinedAt": "2026-09-17T13:54:21.120Z"
+    }
+  ],
+  "results": [],
+  "ratingHistory": [],
+  "notifications": [],
+  "settings": {
+    "teamName": "Office Poker Club",
+    "defaultCurrency": "₽",
+    "defaultVenueId": "",
+    "seasonStart": "2026-09-01",
+    "notifyByDefault": true,
+    "dataMode": "mock",
+    "dataRevision": 2
+  }
+}
