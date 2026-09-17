@@ -44,3 +44,6 @@ next-env.d.ts
 # live hold'em sessions
 data/*
 !data/.gitkeep
+
+# Local Netlify folder
+.netlify
