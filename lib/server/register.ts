@@ -76,10 +76,14 @@ export async function registerUser(input: {
       return state;
     }
 
-    const claimed = state.players.find((player) => {
-      const unclaimed = !player.email || player.email.endsWith("@office.poker");
-      return unclaimed && nameKey(player.name) === nameKey(name);
-    });
+    const claimed =
+      state.players.find(
+        (player) => (player.email || "").toLowerCase() === email
+      ) ??
+      state.players.find((player) => {
+        const unclaimed = !player.email || player.email.endsWith("@office.poker");
+        return unclaimed && nameKey(player.name) === nameKey(name);
+      });
     if (claimed) {
       let user = state.users.find((item) => item.playerId === claimed.id);
       if (!user) {
