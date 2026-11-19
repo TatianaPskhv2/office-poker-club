@@ -42,17 +42,20 @@ export default function RegisterPage() {
         </p>
         <h1 className="mt-2 font-heading text-2xl">Регистрация</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Имя напишите как в списке участников (можно «Иван Петров» или «Петров Иван»).
-          Свою почту и пароль — после входа увидите игры, места и сможете записаться. Менять клуб
-          может только администратор.
+          Напишите имя как в списке участников. Дальше почта и пароль.
         </p>
         <form className="mt-5 grid gap-3" onSubmit={(event) => void handleSubmit(event)}>
           <div className="grid gap-1.5">
             <Label htmlFor="name">Имя и фамилия</Label>
             <Input
               id="name"
+              name="club-full-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
+              placeholder=""
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
               required
             />
           </div>
