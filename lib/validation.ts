@@ -61,6 +61,16 @@ export const resultsSchema = z.object({
     .min(2, "Нужно минимум двое участников"),
 });
 
+export const authSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("Укажите рабочую почту")
+    .transform((value) => value.toLowerCase()),
+  password: z.string().min(6, "Пароль не короче 6 символов").max(100),
+  name: z.string().trim().min(2, "Укажите имя").max(60).optional(),
+});
+
 export type CreateGameValues = z.infer<typeof createGameSchema>;
 export type InvitePlayerValues = z.infer<typeof invitePlayerSchema>;
 export type PlayerProfileValues = z.infer<typeof playerProfileSchema>;

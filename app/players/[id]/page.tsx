@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useClub } from "@/hooks/use-club";
-import { canManagePlayers, ROLE_LABELS } from "@/lib/auth/roles";
+import { canEditPlayer, ROLE_LABELS } from "@/lib/auth/roles";
 import { BADGES } from "@/lib/constants";
 import {
   monthlyActivityForPlayer,
@@ -41,7 +41,7 @@ export default function PlayerProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { state, isHydrated, role } = useClub();
+  const { state, isHydrated, role, currentUser } = useClub();
   const [editOpen, setEditOpen] = useState(false);
   const player = state.players.find((item) => item.id === id);
 
@@ -70,7 +70,7 @@ export default function PlayerProfilePage({
             title={player.name}
             description={`${player.jobTitle || ROLE_LABELS[player.role]} · в клубе с ${formatDate(player.joinedAt, "d MMMM yyyy")}`}
             actions={
-              canManagePlayers(role) ? (
+              canEditPlayer(role, player.id, currentUser) ? (
                 <Button variant="outline" onClick={() => setEditOpen(true)}>
                   Редактировать
                 </Button>

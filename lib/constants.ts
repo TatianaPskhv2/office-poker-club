@@ -1,6 +1,8 @@
 import type { Badge, BadgeKind } from "@/types";
 
 export const APP_NAME = "Office Poker Club";
+export const ADMIN_EMAIL = "romanenko-1007@mail.ru";
+export const SESSION_COOKIE = "opc_session";
 export const STORAGE_KEY = "office-poker-club-state-v5";
 export const SEED_REVISION = 2;
 export const LEGACY_STORAGE_KEYS = [

@@ -18,15 +18,11 @@ import {
 } from "@/components/ui/select";
 import { ROLE_LABELS } from "@/lib/auth/roles";
 import { CURRENCIES } from "@/lib/constants";
-import { isSupabaseConfigured } from "@/lib/supabase/client";
-import { describeRatingFormula } from "@/lib/rating";
 import { useClub } from "@/hooks/use-club";
-import type { UserRole } from "@/types";
 
 export default function SettingsPage() {
   const { state, isHydrated, currentUser, currentPlayer, role, actions } = useClub();
   const [resetOpen, setResetOpen] = useState(false);
-  const supabase = isSupabaseConfigured();
 
   if (!isHydrated) return <PageSkeleton />;
 
@@ -113,67 +109,36 @@ export default function SettingsPage() {
         </section>
 
         <section className="glass-panel space-y-4 p-5">
-          <h2 className="font-heading text-lg">Текущий пользователь</h2>
+          <h2 className="font-heading text-lg">Ваш вход</h2>
           <p className="text-sm text-muted-foreground">
-            {currentPlayer?.name ?? currentUser.name} · {ROLE_LABELS[role]}
+            {currentPlayer?.name ?? currentUser.name} · {currentUser.email} · {ROLE_LABELS[role]}
           </p>
-          <div className="grid gap-1.5">
-            <Label>Войти как</Label>
-            <Select
-              value={state.currentUserId}
-              onValueChange={(value) => value && actions.setCurrentUser(String(value))}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {state.users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-1.5">
-            <Label>Роль (демо)</Label>
-            <Select
-              value={role}
-              onValueChange={(value) => value && actions.setRole(value as UserRole)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Администратор</SelectItem>
-                <SelectItem value="member">Участник</SelectItem>
-                <SelectItem value="viewer">Наблюдатель</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Коллеги регистрируются по почте. Участник видит игры и рейтинг и сам записывается. Менять
+            игры и состав может только администратор.
+          </p>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
+          >
+            Выйти
+          </Button>
         </section>
 
+        {role === "admin" && (
         <section className="glass-panel space-y-3 p-5">
-          <h2 className="font-heading text-lg">Данные и рейтинг</h2>
+          <h2 className="font-heading text-lg">Данные клуба</h2>
           <p className="text-sm text-muted-foreground">
-            Источник: {supabase ? "Supabase" : "локальный mock / localStorage"}. {describeRatingFormula()}
+            Общий список на сервере, его видят все, кто вошёл.
           </p>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => setResetOpen(true)}>
-              Сбросить данные клуба
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() =>
-                toast.message("Supabase ещё не подключён", {
-                  description: "Добавьте URL и anon key в .env.local, клиент уже готов в lib/supabase.",
-                })
-              }
-            >
-              Проверить подключение
-            </Button>
-          </div>
+          <Button variant="outline" onClick={() => setResetOpen(true)}>
+            Сбросить данные клуба
+          </Button>
         </section>
+        )}
       </div>
       <ConfirmDialog
         open={resetOpen}

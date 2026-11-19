@@ -95,26 +95,31 @@ export function GameForm({
       return;
     }
     setPending(true);
-    if (game) {
-      actions.updateGame(game.id, {
-        ...parsed.data,
-        address: parsed.data.address ?? "",
-        notes: parsed.data.notes ?? "",
-      });
-      toast.success("Игра обновлена");
-      onCancel?.();
-      setPending(false);
-      return;
-    }
-    const id = actions.createGame({
-      ...parsed.data,
-      address: parsed.data.address ?? "",
-      notes: parsed.data.notes ?? "",
-    });
-    toast.success("Игра создана", {
-      description: "Она уже появилась в календаре и списке.",
-    });
-    router.push(`/games/${id}`);
+    void (async () => {
+      try {
+        if (game) {
+          await actions.updateGame(game.id, {
+            ...parsed.data,
+            address: parsed.data.address ?? "",
+            notes: parsed.data.notes ?? "",
+          });
+          toast.success("Игра обновлена");
+          onCancel?.();
+          return;
+        }
+        const id = await actions.createGame({
+          ...parsed.data,
+          address: parsed.data.address ?? "",
+          notes: parsed.data.notes ?? "",
+        });
+        toast.success("Игра создана", {
+          description: "Она уже появилась в календаре и списке.",
+        });
+        router.push(`/games/${id}`);
+      } finally {
+        setPending(false);
+      }
+    })();
   }
 
   return (

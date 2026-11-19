@@ -40,6 +40,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { currentPlayer, currentUser, role } = useClub();
   const displayName = currentPlayer?.name ?? currentUser.name;
+  const publicPage = pathname === "/login" || pathname === "/register";
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  }
+
+  if (publicPage) {
+    return <div className="min-h-screen bg-background px-4 py-8">{children}</div>;
+  }
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[220px_1fr]">
@@ -162,6 +172,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem render={<Link href="/settings" />}>
                   Настройки
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void handleLogout()}>
+                  Выйти
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

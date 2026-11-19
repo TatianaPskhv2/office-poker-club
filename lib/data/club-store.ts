@@ -1,105 +1,34 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
-import { LEGACY_STORAGE_KEYS, SEED_REVISION, STORAGE_KEY } from "@/lib/constants";
-import { createSeedState, recomputeClubState } from "@/lib/data/seed";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
+import { STORAGE_KEY } from "@/lib/constants";
+import { createSeedState } from "@/lib/data/seed";
 import { getCurrentUser } from "@/lib/data/selectors";
-import { durationInHours } from "@/lib/format";
-import { scoreGameResult } from "@/lib/rating";
-import type {
-  ClubState,
-  CreateGameInput,
-  Player,
-  SaveResultsInput,
-  UserRole,
-} from "@/types";
+import type { ClubState, CreateGameInput, SaveResultsInput, UserRole } from "@/types";
 
 type Listener = () => void;
 
 const listeners = new Set<Listener>();
 const seed = createSeedState();
 let memoryState: ClubState = seed;
-let loaded = false;
+let ready = false;
 
 function emit() {
   listeners.forEach((listener) => listener());
 }
 
-function persist(state: ClubState) {
+function setState(state: ClubState) {
   memoryState = state;
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
+  ready = true;
   emit();
 }
 
-function clearLegacyStorage() {
-  if (typeof window === "undefined") return;
-  LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
-}
-
-function isClubAdminOnly(person: { id?: string; playerId?: string; name: string }) {
-  return (
-    person.id === "p-tanya" ||
-    person.playerId === "p-tanya" ||
-    person.name === "Татьяна Посохова"
-  );
-}
-
-function migrateState(state: ClubState): ClubState {
-  return {
-    ...state,
-    games: state.games.map((game) => ({
-      ...game,
-      duration: durationInHours(game.duration),
-      venueId: "",
-    })),
-    players: state.players.filter((player) => !isClubAdminOnly(player)),
-    participants: state.participants.filter((item) => item.playerId !== "p-tanya"),
-    results: state.results.filter((item) => item.playerId !== "p-tanya"),
-    users: state.users.map((user) =>
-      user.id === "u-tanya"
-        ? {
-            ...user,
-            name: "Татьяна Посохова",
-            email: user.email || "romanenko-1007@mail.ru",
-            role: "admin",
-          }
-        : user
-    ),
-  };
-}
-
-function readStorage(): ClubState {
-  if (typeof window === "undefined") return seed;
-  try {
-    clearLegacyStorage();
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seed;
-    const parsed = JSON.parse(raw) as ClubState;
-    if ((parsed.settings?.dataRevision ?? 0) < SEED_REVISION) {
-      return seed;
-    }
-    return recomputeClubState(migrateState({ ...seed, ...parsed }));
-  } catch {
-    return seed;
-  }
-}
-
-function ensureLoaded() {
-  if (loaded) return;
-  loaded = true;
-  memoryState = readStorage();
-}
-
 function subscribe(listener: Listener) {
-  ensureLoaded();
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
 
 function getSnapshot() {
-  ensureLoaded();
   return memoryState;
 }
 
@@ -107,247 +36,97 @@ function getServerSnapshot() {
   return seed;
 }
 
-function nextId(prefix: string) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 8)}${Date.now().toString(36).slice(-4)}`;
+function getReadySnapshot() {
+  return ready;
 }
 
-function stamp() {
-  return new Date().toISOString();
-}
-
-function update(mutator: (state: ClubState) => ClubState) {
-  const next = recomputeClubState(mutator(structuredClone(getSnapshot())));
-  persist(next);
-  return next;
-}
-
-function enrollPlayers(gameId: string, playerIds: string[]) {
-  let added = 0;
-  update((state) => {
-    const game = state.games.find((item) => item.id === gameId);
-    if (!game || game.status === "cancelled" || game.status === "completed" || game.status === "live") {
-      return state;
-    }
-    const joinedAt = stamp();
-    playerIds.forEach((pid) => {
-      if (!pid) return;
-      const already = state.participants.some(
-        (item) => item.gameId === gameId && item.playerId === pid
-      );
-      if (already) return;
-      const count = state.participants.filter((item) => item.gameId === gameId).length;
-      if (count >= game.participantLimit && !game.allowLateJoin) return;
-      state.participants.push({
-        id: nextId("gp"),
-        gameId,
-        playerId: pid,
-        joinedAt,
-      });
-      added += 1;
-    });
-    if (added > 0) game.updatedAt = joinedAt;
-    return state;
+async function requestJson(url: string, init?: RequestInit) {
+  const response = await fetch(url, {
+    ...init,
+    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
   });
-  return added;
+  const data = (await response.json().catch(() => ({}))) as {
+    state?: ClubState;
+    error?: string;
+  };
+  if (!response.ok) throw new Error(data.error || "Ошибка запроса");
+  return data;
+}
+
+async function loadFromServer() {
+  const data = await requestJson("/api/club");
+  if (data.state) {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const local = JSON.parse(raw) as ClubState;
+        const localDone = local.games?.filter((game) => game.status === "completed").length ?? 0;
+        const serverDone = data.state.games.filter((game) => game.status === "completed").length;
+        if (localDone > serverDone) {
+          const imported = await requestJson("/api/club", {
+            method: "PUT",
+            body: JSON.stringify({ state: local }),
+          });
+          if (imported.state) {
+            setState(imported.state);
+            return;
+          }
+        }
+      }
+    } catch {
+      /* keep server */
+    }
+    setState(data.state);
+  }
+}
+
+async function run(action: string, payload?: Record<string, unknown>) {
+  const data = await requestJson("/api/club/actions", {
+    method: "POST",
+    body: JSON.stringify({ action, payload }),
+  });
+  if (data.state) setState(data.state);
+  return data.state;
 }
 
 export const clubActions = {
-  createGame(input: CreateGameInput) {
-    const id = nextId("g");
-    const createdAt = stamp();
-    update((state) => {
-      const { user } = getCurrentUser(state);
-      const venueName = (input.venueName || "").trim() || "Место уточняется";
-      const game = {
-        id,
-        title: input.title,
-        date: input.date,
-        startTime: input.startTime,
-        duration: input.duration,
-        venueId: "",
-        venueName,
-        address: (input.address || "").trim(),
-        organizerId: user.playerId,
-        participantLimit: input.participantLimit,
-        buyIn: input.buyIn,
-        currency: input.currency,
-        status: "open" as const,
-        notes: input.notes,
-        allowLateJoin: input.allowLateJoin,
-        notifyParticipants: input.notifyParticipants,
-        createdAt,
-        updatedAt: createdAt,
-      };
-      state.games.push(game);
-      if (input.notifyParticipants) {
-        state.notifications.unshift({
-          id: nextId("n"),
-          title: "Новая игра",
-          body: `${game.title} — ${game.date}, ${game.venueName}`,
-          createdAt,
-          read: false,
-          type: "game",
-        });
-      }
-      return state;
-    });
-    return id;
+  async createGame(input: CreateGameInput) {
+    await run("createGame", input as unknown as Record<string, unknown>);
+    return memoryState.games.at(-1)?.id ?? "";
   },
-
-  updateGame(gameId: string, input: Partial<CreateGameInput>) {
-    update((state) => {
-      const game = state.games.find((item) => item.id === gameId);
-      if (!game) return state;
-      Object.assign(game, {
-        ...input,
-        venueId: "",
-        venueName: input.venueName?.trim() || game.venueName,
-        address: input.address !== undefined ? input.address.trim() : game.address,
-        updatedAt: stamp(),
-      });
-      return state;
-    });
+  async updateGame(gameId: string, input: Partial<CreateGameInput>) {
+    await run("updateGame", { gameId, input });
   },
-
-  cancelGame(gameId: string) {
-    update((state) => {
-      const game = state.games.find((item) => item.id === gameId);
-      if (!game || game.status === "completed") return state;
-      game.status = "cancelled";
-      game.updatedAt = stamp();
-      state.notifications.unshift({
-        id: nextId("n"),
-        title: "Игра отменена",
-        body: `${game.title} больше не состоится.`,
-        createdAt: stamp(),
-        read: false,
-        type: "game",
-      });
-      return state;
-    });
+  async cancelGame(gameId: string) {
+    await run("cancelGame", { gameId });
   },
-
-  deleteGame(gameId: string) {
-    update((state) => {
-      state.games = state.games.filter((item) => item.id !== gameId);
-      state.participants = state.participants.filter((item) => item.gameId !== gameId);
-      state.results = state.results.filter((item) => item.gameId !== gameId);
-      return state;
-    });
+  async deleteGame(gameId: string) {
+    await run("deleteGame", { gameId });
   },
-
-  joinGame(gameId: string, playerId?: string) {
-    const { user } = getCurrentUser(getSnapshot());
-    return enrollPlayers(gameId, [playerId ?? user.playerId]);
+  async joinGame(gameId: string, playerId?: string) {
+    await run("joinGame", { gameId, playerId });
   },
-
-  joinPlayers(gameId: string, playerIds: string[]) {
-    return enrollPlayers(gameId, playerIds);
+  async joinPlayers(gameId: string, playerIds: string[]) {
+    await run("joinPlayers", { gameId, playerIds });
   },
-
-  leavePlayers(gameId: string, playerIds: string[]) {
-    let removed = 0;
-    update((state) => {
-      const game = state.games.find((item) => item.id === gameId);
-      if (!game || game.status === "live") return state;
-      const drop = new Set(playerIds);
-      const present = new Set<string>();
-      state.participants.forEach((item) => {
-        if (item.gameId === gameId && drop.has(item.playerId)) present.add(item.playerId);
-      });
-      state.results.forEach((item) => {
-        if (item.gameId === gameId && drop.has(item.playerId)) present.add(item.playerId);
-      });
-      state.participants = state.participants.filter(
-        (item) => !(item.gameId === gameId && drop.has(item.playerId))
-      );
-      if (game.status === "completed") {
-        state.results = state.results.filter(
-          (item) => !(item.gameId === gameId && drop.has(item.playerId))
-        );
-      }
-      removed = present.size;
-      if (removed > 0) game.updatedAt = stamp();
-      return state;
-    });
-    return removed;
+  async leavePlayers(gameId: string, playerIds: string[]) {
+    const before = memoryState.participants.length + memoryState.results.length;
+    await run("leavePlayers", { gameId, playerIds });
+    return Math.max(0, before - memoryState.participants.length - memoryState.results.length) || playerIds.length;
   },
-
-  leaveGame(gameId: string, playerId?: string) {
-    update((state) => {
-      const { user } = getCurrentUser(state);
-      const pid = playerId ?? user.playerId;
-      const game = state.games.find((item) => item.id === gameId);
-      if (!game || game.status === "completed" || game.status === "live") return state;
-      state.participants = state.participants.filter(
-        (item) => !(item.gameId === gameId && item.playerId === pid)
-      );
-      game.updatedAt = stamp();
-      return state;
-    });
+  async leaveGame(gameId: string, playerId?: string) {
+    await run("leaveGame", { gameId, playerId });
   },
-
-  markLive(gameId: string) {
-    update((state) => {
-      const game = state.games.find((item) => item.id === gameId);
-      if (!game || game.status === "completed" || game.status === "cancelled") return state;
-      game.status = "live";
-      game.updatedAt = stamp();
-      return state;
-    });
+  async markLive(gameId: string) {
+    await run("markLive", { gameId });
   },
-
-  cancelLive(gameId: string) {
-    update((state) => {
-      const game = state.games.find((item) => item.id === gameId);
-      if (!game || game.status !== "live") return state;
-      game.status = "open";
-      game.updatedAt = stamp();
-      state.results = state.results.filter((item) => item.gameId !== gameId);
-      return state;
-    });
+  async cancelLive(gameId: string) {
+    await run("cancelLive", { gameId });
   },
-
-  saveResults(input: SaveResultsInput) {
-    update((state) => {
-      const game = state.games.find((item) => item.id === input.gameId);
-      if (!game) return state;
-      const field = input.entries.length;
-      state.results = state.results.filter((item) => item.gameId !== input.gameId);
-      input.entries.forEach((entry) => {
-        const isWinner = entry.place === 1;
-        state.results.push({
-          id: nextId("gr"),
-          gameId: game.id,
-          playerId: entry.playerId,
-          place: entry.place,
-          payout: entry.payout,
-          ratingDelta: scoreGameResult(entry.place, field, isWinner),
-          isWinner,
-        });
-      });
-      if (input.notes) {
-        game.notes = [game.notes, input.notes].filter(Boolean).join("\n\n");
-      }
-      game.status = "completed";
-      game.updatedAt = stamp();
-      const winner = input.entries.find((item) => item.place === 1);
-      const winnerName = state.players.find((item) => item.id === winner?.playerId)?.name;
-      state.notifications.unshift({
-        id: nextId("n"),
-        title: "Результаты сохранены",
-        body: winnerName
-          ? `${winnerName} выиграл(а) «${game.title}».`
-          : `Результаты «${game.title}» обновлены.`,
-        createdAt: stamp(),
-        read: false,
-        type: "result",
-      });
-      return state;
-    });
+  async saveResults(input: SaveResultsInput) {
+    await run("saveResults", input as unknown as Record<string, unknown>);
   },
-
-  addPlayer(input: {
+  async addPlayer(input: {
     name: string;
     department?: string;
     jobTitle?: string;
@@ -356,47 +135,10 @@ export const clubActions = {
     notes?: string;
     role: UserRole;
   }) {
-    const playerId = nextId("p");
-    const userId = nextId("u");
-    update((state) => {
-      const player: Player = {
-        id: playerId,
-        userId,
-        name: input.name.trim(),
-        department: input.department?.trim() ?? "",
-        jobTitle: input.jobTitle?.trim() ?? "",
-        email: input.email?.trim() || undefined,
-        phone: input.phone?.trim() || undefined,
-        notes: input.notes?.trim() || undefined,
-        role: input.role,
-        rating: 1000,
-        gamesPlayed: 0,
-        wins: 0,
-        losses: 0,
-        winRate: 0,
-        averagePosition: 0,
-        averageResult: 0,
-        bestPosition: 0,
-        bestResult: 0,
-        currentStreak: 0,
-        bestStreak: 0,
-        badges: ["rookie"],
-        joinedAt: stamp().slice(0, 10),
-      };
-      state.players.push(player);
-      state.users.push({
-        id: userId,
-        playerId,
-        email: input.email?.trim() || `${playerId}@office.poker`,
-        name: input.name.trim(),
-        role: input.role,
-      });
-      return state;
-    });
-    return playerId;
+    await run("addPlayer", input);
+    return memoryState.players.at(-1)?.id ?? "";
   },
-
-  updatePlayer(
+  async updatePlayer(
     playerId: string,
     input: {
       name: string;
@@ -408,62 +150,53 @@ export const clubActions = {
       role: UserRole;
     }
   ) {
-    update((state) => {
-      const player = state.players.find((item) => item.id === playerId);
-      if (!player) return state;
-      player.name = input.name.trim();
-      player.department = input.department?.trim() ?? "";
-      player.jobTitle = input.jobTitle?.trim() ?? "";
-      player.email = input.email?.trim() || undefined;
-      player.phone = input.phone?.trim() || undefined;
-      player.notes = input.notes?.trim() || undefined;
-      player.role = input.role;
-      const user = state.users.find((item) => item.playerId === playerId);
-      if (user) {
-        user.name = player.name;
-        user.email = player.email || user.email;
-        user.role = input.role;
-      }
-      return state;
-    });
+    await run("updatePlayer", { playerId, input });
   },
-
-  setCurrentUser(userId: string) {
-    update((state) => {
-      state.currentUserId = userId;
-      return state;
-    });
+  async setCurrentUser(_userId: string) {
+    return;
   },
-
-  setRole(role: UserRole) {
-    update((state) => {
-      const { user, player } = getCurrentUser(state);
-      user.role = role;
-      if (player) player.role = role;
-      return state;
-    });
+  async setRole(_role: UserRole) {
+    return;
   },
-
-  updateSettings(patch: Partial<ClubState["settings"]>) {
-    update((state) => {
-      state.settings = { ...state.settings, ...patch };
-      return state;
-    });
+  async updateSettings(patch: Partial<ClubState["settings"]>) {
+    await run("updateSettings", patch);
   },
-
-  reset() {
-    persist(createSeedState());
+  async reset() {
+    await run("reset");
   },
 };
 
 export function useClubStore() {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const current = useMemo(() => getCurrentUser(state), [state]);
   const isHydrated = useSyncExternalStore(
     subscribe,
-    () => true,
+    getReadySnapshot,
     () => false
   );
+  const current = useMemo(() => {
+    try {
+      return getCurrentUser(state);
+    } catch {
+      return {
+        user: state.users[0] ?? {
+          id: "anon",
+          playerId: "",
+          email: "",
+          name: "Гость",
+          role: "viewer" as const,
+        },
+        player: undefined,
+        role: "viewer" as const,
+      };
+    }
+  }, [state]);
+
+  useEffect(() => {
+    void loadFromServer().catch(() => {
+      ready = true;
+      emit();
+    });
+  }, []);
 
   return {
     state,
@@ -472,6 +205,8 @@ export function useClubStore() {
     currentPlayer: current.player,
     role: current.role,
     actions: clubActions,
-    refresh: useCallback(() => emit(), []),
+    refresh: useCallback(() => {
+      void loadFromServer();
+    }, []),
   };
 }

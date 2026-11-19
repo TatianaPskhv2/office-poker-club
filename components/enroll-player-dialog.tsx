@@ -91,21 +91,17 @@ function EnrollPlayerFields({
     setSelected(checked ? available.map((player) => player.id) : []);
   }
 
-  function handleAdd() {
+  async function handleAdd() {
     if (selected.length === 0) return;
-    const added = actions.joinPlayers(game.id, selected);
-    if (added === 0) {
-      toast.error("Никого не записали", {
-        description: "Стол уже полный или эти игроки уже в списке.",
+    try {
+      await actions.joinPlayers(game.id, selected);
+      toast.success("Игроки записаны", {
+        description: pluralPlayers(selected.length),
       });
-      return;
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Никого не записали");
     }
-    toast.success("Игроки записаны", {
-      description: `${pluralPlayers(added)}${
-        added < selected.length ? ` из ${selected.length} выбранных — мест больше нет` : ""
-      }`,
-    });
-    onClose();
   }
 
   return (
@@ -158,7 +154,7 @@ function EnrollPlayerFields({
         <Button variant="outline" onClick={onCreateNew}>
           Новый участник
         </Button>
-        <Button onClick={handleAdd} disabled={selected.length === 0}>
+        <Button onClick={() => void handleAdd()} disabled={selected.length === 0}>
           {selected.length === 0
             ? "Добавить выбранных"
             : `Добавить (${selected.length})`}

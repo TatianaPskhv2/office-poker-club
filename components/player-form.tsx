@@ -93,7 +93,7 @@ function PlayerFormFields({
   onClose: () => void;
   onCreated?: (playerId: string) => void;
 }) {
-  const { actions } = useClub();
+  const { actions, role } = useClub();
   const [values, setValues] = useState<Draft>(player ? fromPlayer(player) : EMPTY);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,20 +115,20 @@ function PlayerFormFields({
       phone: parsed.data.phone ?? "",
       notes: parsed.data.notes ?? "",
     };
-    if (player) {
-      actions.updatePlayer(player.id, payload);
-      toast.success("Данные сохранены", {
-        description: payload.name,
+    void (async () => {
+      if (player) {
+        await actions.updatePlayer(player.id, payload);
+        toast.success("Данные сохранены", { description: payload.name });
+        onClose();
+        return;
+      }
+      const id = await actions.addPlayer(payload);
+      toast.success("Участник добавлен", {
+        description: `${payload.name} появился в списке клуба.`,
       });
+      onCreated?.(id);
       onClose();
-      return;
-    }
-    const id = actions.addPlayer(payload);
-    toast.success("Участник добавлен", {
-      description: `${payload.name} появился в списке клуба.`,
-    });
-    onCreated?.(id);
-    onClose();
+    })();
   }
 
   return (
@@ -181,6 +181,7 @@ function PlayerFormFields({
             placeholder="+7 999 000-00-00"
           />
         </Field>
+        {role === "admin" && (
         <Field label="Роль в клубе">
           <Select
             value={values.role}
@@ -190,14 +191,12 @@ function PlayerFormFields({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(Object.keys(ROLE_LABELS) as UserRole[]).map((role) => (
-                <SelectItem key={role} value={role}>
-                  {ROLE_LABELS[role]}
-                </SelectItem>
-              ))}
+              <SelectItem value="member">{ROLE_LABELS.member}</SelectItem>
+              <SelectItem value="viewer">{ROLE_LABELS.viewer}</SelectItem>
             </SelectContent>
           </Select>
         </Field>
+        )}
         <Field label="Заметки">
           <Textarea
             value={values.notes}

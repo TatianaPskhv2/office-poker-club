@@ -114,20 +114,22 @@ export function ResultsDialog({
     const dropped = players
       .map((player) => player.id)
       .filter((playerId) => !current.order.includes(playerId));
-    if (dropped.length > 0) {
-      actions.leavePlayers(currentGame.id, dropped);
-    }
-    actions.saveResults({
-      gameId: currentGame.id,
-      pot: parsed.data.pot,
-      notes: parsed.data.notes,
-      entries: parsed.data.entries,
-    });
-    toast.success("Результаты сохранены", {
-      description: "Места сохранены.",
-    });
-    setDraft(null);
-    onOpenChange(false);
+    void (async () => {
+      if (dropped.length > 0) {
+        await actions.leavePlayers(currentGame.id, dropped);
+      }
+      await actions.saveResults({
+        gameId: currentGame.id,
+        pot: parsed.data.pot,
+        notes: parsed.data.notes,
+        entries: parsed.data.entries,
+      });
+      toast.success("Результаты сохранены", {
+        description: "Места сохранены.",
+      });
+      setDraft(null);
+      onOpenChange(false);
+    })();
   }
 
   return (

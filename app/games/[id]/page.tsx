@@ -89,18 +89,18 @@ export default function GameDetailsPage({
   const canRemovePlayers =
     (canManagePlayers(role) || canManage) && !rosterClosed && players.length > 0;
 
-  function removeFromGame(playerId: string, name: string) {
-    const removed = actions.leavePlayers(currentGame.id, [playerId]);
-    if (removed === 0) {
-      toast.error("Не удалось убрать игрока");
-      return;
+  async function removeFromGame(playerId: string, name: string) {
+    try {
+      await actions.leavePlayers(currentGame.id, [playerId]);
+      toast.success("Сняли с игры", {
+        description:
+          currentGame.status === "completed"
+            ? `${name} убран(а) из записи и результатов. Рейтинг пересчитан.`
+            : name,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось убрать игрока");
     }
-    toast.success("Сняли с игры", {
-      description:
-        currentGame.status === "completed"
-          ? `${name} убран(а) из записи и результатов. Рейтинг пересчитан.`
-          : name,
-    });
   }
 
   async function handleLiveTable() {
@@ -322,7 +322,7 @@ export default function GameDetailsPage({
             organizerId={game.organizerId}
             onRemove={
               canRemovePlayers
-                ? (player) => removeFromGame(player.id, player.name)
+                ? (player) => void removeFromGame(player.id, player.name)
                 : undefined
             }
           />
@@ -358,7 +358,7 @@ export default function GameDetailsPage({
                         variant="ghost"
                         size="sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => removeFromGame(player.id, player.name)}
+                        onClick={() => void removeFromGame(player.id, player.name)}
                       >
                         Убрать
                       </Button>

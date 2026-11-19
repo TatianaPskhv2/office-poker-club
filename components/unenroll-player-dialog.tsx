@@ -56,17 +56,17 @@ function UnenrollPlayerFields({
     });
   }
 
-  function handleRemove() {
+  async function handleRemove() {
     if (selected.length === 0) return;
-    const removed = actions.leavePlayers(game.id, selected);
-    if (removed === 0) {
-      toast.error("Никого не убрали");
-      return;
+    try {
+      await actions.leavePlayers(game.id, selected);
+      toast.success("Сняли с игры", {
+        description: pluralPlayers(selected.length),
+      });
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Никого не убрали");
     }
-    toast.success("Сняли с игры", {
-      description: pluralPlayers(removed),
-    });
-    onClose();
   }
 
   return (
@@ -115,7 +115,7 @@ function UnenrollPlayerFields({
         <Button variant="outline" onClick={onClose}>
           Отмена
         </Button>
-        <Button variant="destructive" onClick={handleRemove} disabled={selected.length === 0}>
+          <Button variant="destructive" onClick={() => void handleRemove()} disabled={selected.length === 0}>
           {selected.length === 0 ? "Убрать выбранных" : `Убрать (${selected.length})`}
         </Button>
       </DialogFooter>
