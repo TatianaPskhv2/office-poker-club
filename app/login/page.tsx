@@ -73,12 +73,9 @@ export default function LoginPage() {
             {pending ? "Входим…" : "Войти"}
           </Button>
         </form>
-        <p className="mt-4 text-sm text-muted-foreground">
-          Ещё нет аккаунта?{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            Регистрация
-          </Link>
-        </p>
+        <Button nativeButton={false} variant="outline" className="mt-3 w-full" render={<Link href="/register" />}>
+          Нет аккаунта — регистрация
+        </Button>
       </section>
     </div>
   );

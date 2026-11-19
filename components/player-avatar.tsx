@@ -32,17 +32,18 @@ export function PlayerAvatar({
   className,
   size = "default",
 }: {
-  name: string;
+  name?: string;
   className?: string;
   size?: Size;
 }) {
+  const safeName = name?.trim() || "Игрок";
   return (
     <Avatar
       size={size === "sm" ? "sm" : size === "lg" || size === "xl" ? "lg" : "default"}
       className={cn(sizeClass[size], className)}
     >
-      <AvatarFallback className={cn("font-medium", colorFromName(name))}>
-        {initials(name)}
+      <AvatarFallback className={cn("font-medium", colorFromName(safeName))}>
+        {initials(safeName)}
       </AvatarFallback>
     </Avatar>
   );

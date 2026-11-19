@@ -12,6 +12,7 @@ const listeners = new Set<Listener>();
 const seed = createSeedState();
 let memoryState: ClubState = seed;
 let ready = false;
+let signedIn = false;
 
 function emit() {
   listeners.forEach((listener) => listener());
@@ -40,6 +41,10 @@ function getReadySnapshot() {
   return ready;
 }
 
+function getSignedInSnapshot() {
+  return signedIn;
+}
+
 async function requestJson(url: string, init?: RequestInit) {
   const response = await fetch(url, {
     ...init,
@@ -51,6 +56,18 @@ async function requestJson(url: string, init?: RequestInit) {
   };
   if (!response.ok) throw new Error(data.error || "Ошибка запроса");
   return data;
+}
+
+async function bootstrap() {
+  const me = await fetch("/api/auth/me");
+  if (!me.ok) {
+    signedIn = false;
+    ready = true;
+    emit();
+    return;
+  }
+  signedIn = true;
+  await loadFromServer();
 }
 
 async function loadFromServer() {
@@ -173,6 +190,11 @@ export function useClubStore() {
     getReadySnapshot,
     () => false
   );
+  const isSignedIn = useSyncExternalStore(
+    subscribe,
+    getSignedInSnapshot,
+    () => false
+  );
   const current = useMemo(() => {
     try {
       return getCurrentUser(state);
@@ -192,7 +214,8 @@ export function useClubStore() {
   }, [state]);
 
   useEffect(() => {
-    void loadFromServer().catch(() => {
+    void bootstrap().catch(() => {
+      signedIn = false;
       ready = true;
       emit();
     });
@@ -201,12 +224,13 @@ export function useClubStore() {
   return {
     state,
     isHydrated,
+    isSignedIn,
     currentUser: current.user,
     currentPlayer: current.player,
     role: current.role,
     actions: clubActions,
     refresh: useCallback(() => {
-      void loadFromServer();
+      void bootstrap();
     }, []),
   };
 }

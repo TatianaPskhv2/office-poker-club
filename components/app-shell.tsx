@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -38,9 +39,14 @@ const NAV = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { currentPlayer, currentUser, role } = useClub();
-  const displayName = currentPlayer?.name ?? currentUser.name;
+  const { currentPlayer, currentUser, role, isHydrated, isSignedIn } = useClub();
+  const displayName = currentPlayer?.name ?? currentUser.name ?? "Профиль";
   const publicPage = pathname === "/login" || pathname === "/register";
+
+  useEffect(() => {
+    if (!isHydrated || publicPage || isSignedIn) return;
+    window.location.replace("/register");
+  }, [isHydrated, publicPage, isSignedIn]);
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -133,21 +139,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
             )}
             <ThemeToggle />
+            {!isSignedIn ? (
+              <>
+                <Button variant="outline" nativeButton={false} render={<Link href="/login" />}>
+                  Войти
+                </Button>
+                <Button nativeButton={false} render={<Link href="/register" />}>
+                  Регистрация
+                </Button>
+              </>
+            ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    className="h-auto gap-2 rounded-lg px-1.5 py-1"
-                    aria-label="Меню профиля"
-                  />
-                }
-              >
+              <DropdownMenuTrigger className="flex h-auto items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-foreground/5">
                 <PlayerAvatar name={displayName} size="sm" />
                 <span className="hidden flex-col items-start sm:flex">
                   <span className="text-sm leading-4 font-medium">{displayName}</span>
                   <span className="text-[11px] leading-4 text-muted-foreground">
-                    {ROLE_LABELS[role]}
+                    {ROLE_LABELS[role] ?? "Участник"}
                   </span>
                 </span>
               </DropdownMenuTrigger>
@@ -156,7 +164,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <div className="flex flex-col">
                     <span>{displayName}</span>
                     <span className="font-normal text-muted-foreground">
-                      {ROLE_LABELS[role]}
+                      {ROLE_LABELS[role] ?? "Участник"}
                     </span>
                   </div>
                 </DropdownMenuLabel>
@@ -173,11 +181,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem render={<Link href="/settings" />}>
                   Настройки
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => void handleLogout()}>
+                <DropdownMenuItem nativeButton onClick={() => void handleLogout()}>
                   Выйти
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            )}
           </div>
         </header>
         <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-5 sm:px-6 sm:py-6">
