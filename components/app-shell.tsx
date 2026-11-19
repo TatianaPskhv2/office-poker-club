@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { href: "/", label: "Обзор", icon: LayoutGrid },
   { href: "/games", label: "Игры", icon: Plus },
-  { href: "/leaderboard", label: "Рейтинг", icon: Hash },
+  { href: "/leaderboard", label: "Места", icon: Hash },
   { href: "/players", label: "Участники", icon: Users },
   { href: "/history", label: "История", icon: History },
   { href: "/settings", label: "Настройки", icon: Settings },

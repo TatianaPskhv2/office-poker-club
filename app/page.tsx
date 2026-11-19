@@ -209,7 +209,7 @@ export default function DashboardPage() {
             </ol>
           ) : (
             <EmptyState
-              title="Рейтинг пока пуст"
+              title="Таблица мест пока пуста"
               description="Добавьте участников и закройте первую игру — таблица заполнится сама."
             />
           )}
@@ -288,7 +288,7 @@ export default function DashboardPage() {
               render={<Link href="/leaderboard" />}
             >
               <Trophy data-icon="inline-start" />
-              Посмотреть рейтинг
+              Посмотреть места
             </Button>
             <Button
               variant="secondary"
