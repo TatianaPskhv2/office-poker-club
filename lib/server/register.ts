@@ -1,5 +1,5 @@
 import { ADMIN_EMAIL } from "@/lib/constants";
-import { nextId, normalizeName, stamp } from "@/lib/server/ids";
+import { nameKey, nextId, stamp } from "@/lib/server/ids";
 import { getPasswordHash, setPasswordHash } from "@/lib/server/passwords";
 import { hashPassword, verifyPassword } from "@/lib/server/session";
 import { loadClub, updateClub } from "@/lib/server/club-file";
@@ -76,11 +76,10 @@ export async function registerUser(input: {
       return state;
     }
 
-    const claimed = state.players.find(
-      (player) =>
-        normalizeName(player.name) === normalizeName(name) &&
-        (!player.email || player.email.endsWith("@office.poker"))
-    );
+    const claimed = state.players.find((player) => {
+      const unclaimed = !player.email || player.email.endsWith("@office.poker");
+      return unclaimed && nameKey(player.name) === nameKey(name);
+    });
     if (claimed) {
       let user = state.users.find((item) => item.playerId === claimed.id);
       if (!user) {
@@ -181,11 +180,10 @@ export async function loginUser(email: string, password: string) {
     return admin;
   }
   const user = await findUserByEmail(normalized);
-  if (!user) throw new Error("Неверная почта или пароль");
+  if (!user) throw new Error("Неверная почта или пароль. Сначала зарегистрируйтесь.");
   const stored = await getPasswordHash(user.id);
   if (!stored) {
-    await setPasswordHash(user.id, hashPassword(password));
-    return user;
+    throw new Error("Сначала зарегистрируйтесь с этой почтой и задайте пароль.");
   }
   if (!verifyPassword(password, stored)) {
     throw new Error("Неверная почта или пароль");

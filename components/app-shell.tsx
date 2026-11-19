@@ -45,7 +45,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isHydrated || publicPage || isSignedIn) return;
-    window.location.replace("/register");
+    window.location.replace("/login");
   }, [isHydrated, publicPage, isSignedIn]);
 
   async function handleLogout() {

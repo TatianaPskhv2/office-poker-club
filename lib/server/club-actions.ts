@@ -105,7 +105,17 @@ export function applyClubAction(
       if (actor.role !== "admin" && !state.players.some((item) => item.id === playerId)) {
         throw new Error("Сначала заполните профиль игрока");
       }
-      return enrollPlayers(state, String(payload.gameId), [playerId]);
+      const gameId = String(payload.gameId);
+      const already = state.participants.some(
+        (item) => item.gameId === gameId && item.playerId === playerId
+      );
+      if (already) return state;
+      const before = state.participants.length;
+      enrollPlayers(state, gameId, [playerId]);
+      if (state.participants.length === before) {
+        throw new Error("На эту игру уже нельзя записаться");
+      }
+      return state;
     }
     case "joinPlayers": {
       requireAdmin(actor);

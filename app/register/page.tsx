@@ -42,7 +42,9 @@ export default function RegisterPage() {
         </p>
         <h1 className="mt-2 font-heading text-2xl">Регистрация</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Укажите имя как в клубе — если вы уже в списке, профиль подхватится. Админ: {ADMIN_EMAIL}.
+          Имя напишите как в списке участников (можно «Иван Петров» или «Петров Иван»).
+          Свою почту и пароль — после входа увидите игры, места и сможете записаться. Менять клуб
+          может только администратор.
         </p>
         <form className="mt-5 grid gap-3" onSubmit={(event) => void handleSubmit(event)}>
           <div className="grid gap-1.5">

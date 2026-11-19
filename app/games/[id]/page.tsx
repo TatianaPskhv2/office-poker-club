@@ -181,13 +181,19 @@ export default function GameDetailsPage({
             {currentPlayer && (
               <Button
                 onClick={() => {
-                  if (signed) {
-                    actions.leaveGame(game.id);
-                    toast.success("Запись отменена");
-                  } else {
-                    actions.joinGame(game.id);
-                    toast.success("Вы записались");
-                  }
+                  void (async () => {
+                    try {
+                      if (signed) {
+                        await actions.leaveGame(game.id);
+                        toast.success("Запись отменена");
+                      } else {
+                        await actions.joinGame(game.id);
+                        toast.success("Вы записались");
+                      }
+                    } catch (error) {
+                      toast.error(error instanceof Error ? error.message : "Не удалось записаться");
+                    }
+                  })();
                 }}
                 disabled={joinDisabled}
               >

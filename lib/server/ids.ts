@@ -9,3 +9,7 @@ export function stamp() {
 export function normalizeName(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
 }
+
+export function nameKey(name: string) {
+  return normalizeName(name).split(" ").filter(Boolean).sort().join(" ");
+}

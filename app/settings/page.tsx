@@ -31,9 +31,10 @@ export default function SettingsPage() {
       <PageHeader
         eyebrow="Настройки"
         title="Клуб и доступ"
-        description="Команда, роли и источник данных. Сейчас приложение работает в mock-режиме."
+        description="Ваш вход в общий клуб. Игры и места видят все участники."
       />
       <div className="space-y-4">
+        {role === "admin" && (
         <section className="glass-panel space-y-4 p-5">
           <h2 className="font-heading text-lg">Команда</h2>
           <div className="grid gap-1.5">
@@ -107,6 +108,7 @@ export default function SettingsPage() {
             />
           </label>
         </section>
+        )}
 
         <section className="glass-panel space-y-4 p-5">
           <h2 className="font-heading text-lg">Ваш вход</h2>

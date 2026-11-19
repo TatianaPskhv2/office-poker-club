@@ -57,15 +57,19 @@ export default function DashboardPage() {
     upcoming && currentPlayer ? isSignedUp(state, upcoming.id, currentPlayer.id) : false;
   const upcomingPlayers = upcoming ? getGamePlayers(state, upcoming.id) : [];
 
-  function handleRsvp() {
+  async function handleRsvp() {
     if (!upcoming || !currentPlayer) return;
-    if (signed) {
-      actions.leaveGame(upcoming.id);
-      toast.success("Запись отменена");
-      return;
+    try {
+      if (signed) {
+        await actions.leaveGame(upcoming.id);
+        toast.success("Запись отменена");
+        return;
+      }
+      await actions.joinGame(upcoming.id);
+      toast.success("Вы записались на игру");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось записаться");
     }
-    actions.joinGame(upcoming.id);
-    toast.success("Вы записались на игру");
   }
 
   return (
@@ -122,7 +126,7 @@ export default function DashboardPage() {
                 <Button
                   variant="secondary"
                   className="h-9 min-w-40"
-                  onClick={handleRsvp}
+                  onClick={() => void handleRsvp()}
                   disabled={
                     !canRsvp(role) ||
                     (!signed && upcoming.status === "full" && !upcoming.allowLateJoin)
