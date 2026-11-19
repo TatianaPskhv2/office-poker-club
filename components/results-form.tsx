@@ -112,6 +112,12 @@ export function ResultsDialog({
       update({ error: parsed.error.issues[0]?.message ?? "Проверьте поля" });
       return;
     }
+    const dropped = players
+      .map((player) => player.id)
+      .filter((playerId) => !current.order.includes(playerId));
+    if (dropped.length > 0) {
+      actions.leavePlayers(currentGame.id, dropped);
+    }
     actions.saveResults({
       gameId: currentGame.id,
       pot: parsed.data.pot,
@@ -137,7 +143,7 @@ export function ResultsDialog({
         <DialogHeader>
           <DialogTitle>Результаты: {currentGame.title}</DialogTitle>
           <DialogDescription>
-            Расставьте игроков по местам. Первое место станет победителем, рейтинг пересчитается сразу.
+            Расставьте игроков по местам. Кто не играл — уберите из списка, рейтинг пересчитается.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
@@ -195,6 +201,21 @@ export function ResultsDialog({
                       <ArrowDown />
                     </Button>
                   </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    disabled={current.order.length <= 2}
+                    onClick={() => {
+                      const next = current.order.filter((id) => id !== playerId);
+                      const payouts = { ...current.payouts };
+                      delete payouts[playerId];
+                      update({ order: next, payouts });
+                    }}
+                  >
+                    Убрать
+                  </Button>
                 </li>
               );
             })}

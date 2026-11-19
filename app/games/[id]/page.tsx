@@ -85,8 +85,10 @@ export default function GameDetailsPage({
     (!signed && currentGame.status === "full" && !currentGame.allowLateJoin);
   const rosterClosed =
     currentGame.status === "live" || currentGame.status === "cancelled";
-  const canAddPlayers = canManagePlayers(role) && !rosterClosed && currentGame.status !== "completed";
-  const canRemovePlayers = canManagePlayers(role) && !rosterClosed && players.length > 0;
+  const canAddPlayers =
+    (canManagePlayers(role) || canManage) && !rosterClosed && currentGame.status !== "completed";
+  const canRemovePlayers =
+    (canManagePlayers(role) || canManage) && !rosterClosed && players.length > 0;
 
   function removeFromGame(playerId: string, name: string) {
     const removed = actions.leavePlayers(currentGame.id, [playerId]);
@@ -196,6 +198,11 @@ export default function GameDetailsPage({
                 Редактировать
               </Button>
             )}
+            {canRemovePlayers && currentGame.status === "completed" && (
+              <Button variant="outline" onClick={() => setUnenrollOpen(true)}>
+                Убрать игрока
+              </Button>
+            )}
             {canManage && (game.status === "open" || game.status === "full") && (
               <Button
                 disabled={starting || players.length < 2}
@@ -271,6 +278,11 @@ export default function GameDetailsPage({
               {canEnterResults(role) && game.status !== "live" && game.status !== "cancelled" && (
                 <Button onClick={() => setResultsOpen(true)} disabled={players.length < 2}>
                   {game.status === "completed" ? "Изменить результаты" : "Внести результаты"}
+                </Button>
+              )}
+              {canRemovePlayers && (
+                <Button variant="outline" onClick={() => setUnenrollOpen(true)}>
+                  Убрать игрока
                 </Button>
               )}
               {canCancelGame(role) &&
