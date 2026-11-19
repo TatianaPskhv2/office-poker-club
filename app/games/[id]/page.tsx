@@ -35,7 +35,6 @@ import {
   formatDuration,
   formatMoney,
   formatRelativeDate,
-  formatSigned,
 } from "@/lib/format";
 
 export default function GameDetailsPage({
@@ -178,7 +177,7 @@ export default function GameDetailsPage({
             >
               {signed ? "Отменить запись" : "Записаться"}
             </Button>
-            {canManage && game.status !== "completed" && game.status !== "cancelled" && game.status !== "live" && (
+            {canManage && game.status !== "cancelled" && game.status !== "live" && (
               <Button variant="outline" onClick={() => setEditOpen(true)}>
                 Редактировать
               </Button>
@@ -248,26 +247,31 @@ export default function GameDetailsPage({
               </div>
             </div>
           </div>
-          {canManage && game.status !== "completed" && (
+          {canManage && (
             <div className="mt-5 flex flex-wrap gap-2">
               {game.status === "live" && (
                 <Button variant="outline" onClick={() => void handleImportLive()}>
                   Записать рейтинг со стола
                 </Button>
               )}
-              {canEnterResults(role) && game.status !== "live" && (
+              {canEnterResults(role) && game.status !== "live" && game.status !== "cancelled" && (
                 <Button onClick={() => setResultsOpen(true)} disabled={players.length < 2}>
-                  Внести результаты
+                  {game.status === "completed" ? "Изменить результаты" : "Внести результаты"}
                 </Button>
               )}
-              {canCancelGame(role) && game.status !== "cancelled" && game.status !== "live" && (
+              {canCancelGame(role) &&
+                game.status !== "cancelled" &&
+                game.status !== "live" &&
+                game.status !== "completed" && (
                 <Button variant="destructive" onClick={() => setCancelOpen(true)}>
                   Отменить игру
                 </Button>
               )}
-              <Button variant="ghost" onClick={() => setDeleteOpen(true)}>
-                Удалить
-              </Button>
+              {game.status !== "live" && (
+                <Button variant="ghost" onClick={() => setDeleteOpen(true)}>
+                  Удалить
+                </Button>
+              )}
             </div>
           )}
         </section>
@@ -290,6 +294,7 @@ export default function GameDetailsPage({
           <ParticipantsList
             players={players}
             organizerId={game.organizerId}
+            showRating={game.status !== "completed"}
             onRemove={
               canManagePlayers(role) && !rosterLocked
                 ? (player) => {
@@ -307,14 +312,13 @@ export default function GameDetailsPage({
           <h2 className="font-heading text-lg">Итоги стола</h2>
           {winner && (
             <p className="mt-1 text-sm text-muted-foreground">
-              Победитель — {winner.name}. Банк {formatMoney(getGamePot(state, game), game.currency)}, {formatDuration(game.duration)}.
+              Победитель — {winner.name}.
             </p>
           )}
           <ol className="mt-4 space-y-2">
             {results.map((result) => {
               const player = state.players.find((item) => item.id === result.playerId);
               if (!player) return null;
-              const profit = result.payout - game.buyIn;
               return (
                 <li key={result.id}>
                   <Link
@@ -324,12 +328,6 @@ export default function GameDetailsPage({
                     <span className="tabular w-6 text-sm text-muted-foreground">{result.place}</span>
                     <PlayerAvatar name={player.name} />
                     <span className="min-w-0 flex-1 truncate">{player.name}</span>
-                    <span className={profit >= 0 ? "tabular text-win" : "tabular text-loss"}>
-                      {formatSigned(profit)} {game.currency}
-                    </span>
-                    <span className="tabular text-sm text-muted-foreground">
-                      {formatSigned(result.ratingDelta)}
-                    </span>
                   </Link>
                 </li>
               );

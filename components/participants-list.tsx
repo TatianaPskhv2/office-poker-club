@@ -11,11 +11,13 @@ export function ParticipantsList({
   players,
   organizerId,
   onRemove,
+  showRating = true,
   className,
 }: {
   players: Player[];
   organizerId?: string;
   onRemove?: (player: Player) => void;
+  showRating?: boolean;
   className?: string;
 }) {
   if (players.length === 0) {
@@ -44,7 +46,9 @@ export function ParticipantsList({
                 {player.id === organizerId ? " · организатор" : ""}
               </p>
             </div>
-            <span className="tabular text-sm text-muted-foreground">{player.rating}</span>
+            {showRating ? (
+              <span className="tabular text-sm text-muted-foreground">{player.rating}</span>
+            ) : null}
           </Link>
           {onRemove && (
             <Button

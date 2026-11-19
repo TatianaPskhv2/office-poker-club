@@ -30,13 +30,27 @@ type Draft = {
   error: string | null;
 };
 
-function createDraft(game: Game, players: Player[]): Draft {
-  const order = players.map((player) => player.id);
-  const pot = game.buyIn * order.length;
+function createDraft(
+  game: Game,
+  players: Player[],
+  existing: { playerId: string; place: number; payout: number }[]
+): Draft {
+  const ranked = [...existing].sort((a, b) => a.place - b.place);
+  const rankedIds = ranked.map((item) => item.playerId);
+  const rest = players.filter((player) => !rankedIds.includes(player.id)).map((player) => player.id);
+  const order = rankedIds.length > 0 ? [...rankedIds, ...rest] : players.map((player) => player.id);
+  const pot =
+    ranked.length > 0
+      ? ranked.reduce((sum, item) => sum + item.payout, 0)
+      : game.buyIn * order.length;
   const shares = [0.5, 0.25, 0.15, 0.1];
   const payouts: Record<string, string> = {};
   order.forEach((id, index) => {
-    payouts[id] = String(Math.round(pot * (shares[index] ?? 0)));
+    const saved = ranked.find((item) => item.playerId === id);
+    payouts[id] =
+      saved !== undefined
+        ? String(saved.payout)
+        : String(Math.round(pot * (shares[index] ?? 0)));
   });
   return { gameId: game.id, order, payouts, pot: String(pot), notes: "", error: null };
 }
@@ -55,12 +69,16 @@ export function ResultsDialog({
     () => (game ? getGamePlayers(state, game.id) : []),
     [game, state]
   );
+  const existing = useMemo(
+    () => (game ? state.results.filter((item) => item.gameId === game.id) : []),
+    [game, state.results]
+  );
   const [draft, setDraft] = useState<Draft | null>(null);
   const active =
     game && open
       ? draft && draft.gameId === game.id
         ? draft
-        : createDraft(game, players)
+        : createDraft(game, players, existing)
       : null;
 
   if (!game || !active) return null;
