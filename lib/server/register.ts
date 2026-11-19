@@ -32,13 +32,27 @@ export async function registerUser(input: {
   const name = input.name.trim();
   const passwordHash = hashPassword(input.password);
   const holder: { user?: User } = {};
+  const existing = await findUserByEmail(email);
+  if (existing) {
+    const already = await getPasswordHash(existing.id);
+    if (already) {
+      throw new Error("Эта почта уже занята. Нажмите «Войти» и введите пароль.");
+    }
+    await updateClub((state) => {
+      const user = state.users.find((item) => item.id === existing.id);
+      if (!user) return state;
+      user.email = email;
+      user.name = name || user.name;
+      if (email === ADMIN_EMAIL) user.role = "admin";
+      holder.user = user;
+      return state;
+    });
+    if (!holder.user) throw new Error("Не удалось создать пользователя");
+    await setPasswordHash(holder.user.id, passwordHash);
+    return holder.user;
+  }
 
   await updateClub((state) => {
-    const existing = state.users.find((user) => user.email.toLowerCase() === email);
-    if (existing) {
-      throw new Error("Эта почта уже зарегистрирована");
-    }
-
     if (email === ADMIN_EMAIL) {
       let admin = state.users.find((user) => user.id === "u-tanya" || user.role === "admin");
       if (!admin) {
@@ -127,7 +141,7 @@ export async function loginUser(email: string, password: string) {
   const user = await findUserByEmail(email);
   if (!user) throw new Error("Неверная почта или пароль");
   const stored = await getPasswordHash(user.id);
-  if (!stored) throw new Error("Неверная почта или пароль");
+  if (!stored) throw new Error("Пароль ещё не задан. Зарегистрируйтесь с этой почтой.");
   if (!verifyPassword(password, stored)) throw new Error("Неверная почта или пароль");
   return user;
 }

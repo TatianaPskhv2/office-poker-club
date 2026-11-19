@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { ADMIN_EMAIL, APP_NAME } from "@/lib/constants";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,8 +26,7 @@ export default function RegisterPage() {
       const data = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(data.error || "Не удалось зарегистрироваться");
       toast.success("Аккаунт создан");
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Не удалось зарегистрироваться");
     } finally {
