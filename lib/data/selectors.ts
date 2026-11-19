@@ -235,14 +235,24 @@ export function monthlyActivityForPlayer(state: ClubState, playerId: string) {
 }
 
 export function playerGameHistory(state: ClubState, playerId: string) {
-  return state.results
+  const fromResults = state.results
     .filter((item) => item.playerId === playerId)
     .map((result) => {
       const game = state.games.find((item) => item.id === result.gameId);
       return { result, game };
     })
-    .filter((item) => item.game)
-    .sort((a, b) => `${b.game!.date}`.localeCompare(`${a.game!.date}`));
+    .filter((item) => item.game);
+  const seen = new Set(fromResults.map((item) => item.game!.id));
+  const fromSignup = state.participants
+    .filter((item) => item.playerId === playerId && !seen.has(item.gameId))
+    .map((item) => ({
+      result: undefined,
+      game: state.games.find((game) => game.id === item.gameId),
+    }))
+    .filter((item) => item.game);
+  return [...fromResults, ...fromSignup].sort((a, b) =>
+    `${b.game!.date}${b.game!.startTime}`.localeCompare(`${a.game!.date}${a.game!.startTime}`)
+  );
 }
 
 export function expectedScore(place: number, fieldSize: number, isWinner: boolean) {

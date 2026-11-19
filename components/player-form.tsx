@@ -137,7 +137,7 @@ function PlayerFormFields({
         <DialogTitle>{player ? "Редактировать участника" : "Новый участник"}</DialogTitle>
         <DialogDescription>
           {player
-            ? "Обновите имя, контакты и роль."
+            ? "Можно указать отдел, должность и контакты."
             : "Заполните данные сами — участник сразу появится в клубе."}
         </DialogDescription>
       </DialogHeader>

@@ -143,6 +143,9 @@ export const clubActions = {
   async saveResults(input: SaveResultsInput) {
     await run("saveResults", input as unknown as Record<string, unknown>);
   },
+  async deletePlayer(playerId: string) {
+    await run("deletePlayer", { playerId });
+  },
   async addPlayer(input: {
     name: string;
     department?: string;

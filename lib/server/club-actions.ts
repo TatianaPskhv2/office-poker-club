@@ -190,6 +190,17 @@ export function applyClubAction(
       game.updatedAt = stamp();
       return state;
     }
+    case "deletePlayer": {
+      requireAdmin(actor);
+      const playerId = String(payload.playerId);
+      state.players = state.players.filter((item) => item.id !== playerId);
+      state.users = state.users.filter(
+        (item) => item.id === "u-tanya" || item.playerId !== playerId
+      );
+      state.participants = state.participants.filter((item) => item.playerId !== playerId);
+      state.results = state.results.filter((item) => item.playerId !== playerId);
+      return state;
+    }
     case "addPlayer": {
       requireAdmin(actor);
       const input = payload as {

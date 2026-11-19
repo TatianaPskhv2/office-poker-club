@@ -14,8 +14,8 @@ export function canEditGame(role: UserRole, _organizerId?: string, _user?: User)
   return role === "admin";
 }
 
-export function canEditPlayer(role: UserRole, playerId: string, user: User): boolean {
-  return role === "admin" || user.playerId === playerId;
+export function canEditPlayer(role: UserRole, playerId: string, user?: User): boolean {
+  return role === "admin" || user?.playerId === playerId;
 }
 
 export function canCancelGame(role: UserRole): boolean {

@@ -2,6 +2,8 @@
 
 import { use, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
 import { GamesByMonthChart } from "@/components/charts";
 import { PageHeader } from "@/components/page-header";
@@ -21,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useClub } from "@/hooks/use-club";
-import { canEditPlayer, ROLE_LABELS } from "@/lib/auth/roles";
+import { canEditPlayer, canManagePlayers, ROLE_LABELS } from "@/lib/auth/roles";
 import { BADGES } from "@/lib/constants";
 import {
   monthlyActivityForPlayer,
@@ -41,7 +43,8 @@ export default function PlayerProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { state, isHydrated, role, currentUser } = useClub();
+  const router = useRouter();
+  const { state, isHydrated, role, currentUser, actions } = useClub();
   const [editOpen, setEditOpen] = useState(false);
   const player = state.players.find((item) => item.id === id);
 
@@ -68,19 +71,35 @@ export default function PlayerProfilePage({
           <PageHeader
             eyebrow={player.department || ROLE_LABELS[player.role]}
             title={player.name}
-            description={`${player.jobTitle || ROLE_LABELS[player.role]} · в клубе с ${formatDate(player.joinedAt, "d MMMM yyyy")}`}
+            description={`${player.department || "отдел не указан"}${player.jobTitle ? ` · ${player.jobTitle}` : ""} · в клубе с ${formatDate(player.joinedAt, "d MMMM yyyy")}`}
             actions={
-              canEditPlayer(role, player.id, currentUser) ? (
-                <Button variant="outline" onClick={() => setEditOpen(true)}>
-                  Редактировать
-                </Button>
-              ) : undefined
+              <>
+                {canEditPlayer(role, player.id, currentUser) ? (
+                  <Button variant="outline" onClick={() => setEditOpen(true)}>
+                    Редактировать профиль
+                  </Button>
+                ) : null}
+                {canManagePlayers(role) ? (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      void (async () => {
+                        await actions.deletePlayer(player.id);
+                        toast.success("Участник удалён");
+                        router.push("/players");
+                      })();
+                    }}
+                  >
+                    Удалить
+                  </Button>
+                ) : null}
+              </>
             }
           />
           <div className="flex flex-wrap gap-1.5">
-            {player.badges.map((badge) => (
+            {(player.badges ?? []).map((badge) => (
               <Badge key={badge} variant={badge === "leader" ? "default" : "outline"}>
-                {BADGES[badge].label}
+                {BADGES[badge]?.label ?? badge}
               </Badge>
             ))}
           </div>
@@ -116,10 +135,13 @@ export default function PlayerProfilePage({
 
       <section className="glass-panel mt-4 overflow-hidden p-0">
         <div className="px-5 pt-5">
-          <h2 className="font-heading text-lg">История игр</h2>
+          <h2 className="font-heading text-lg">Игры участника</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Здесь записи на столы и места в завершённых играх.
+          </p>
         </div>
         {history.length === 0 ? (
-          <EmptyState className="m-5" title="Ещё не сыграл" description="После первой игры здесь появятся результаты." />
+          <EmptyState className="m-5" title="Пока нет игр" description="Когда запишетесь или сыграете, игры появятся здесь." />
         ) : (
           <Table>
             <TableHeader>
@@ -134,10 +156,12 @@ export default function PlayerProfilePage({
               {history.map(({ game, result }) => {
                 if (!game) return null;
                 return (
-                  <TableRow key={result.id}>
+                  <TableRow key={`${game.id}-${result?.id ?? "rsvp"}`}>
                     <TableCell>{formatDate(game.date, "d MMM yyyy")}</TableCell>
                     <TableCell className="max-w-48 truncate">{game.title}</TableCell>
-                    <TableCell className="tabular">{result.place}</TableCell>
+                    <TableCell className="tabular">
+                      {result ? result.place : game.status === "completed" ? "—" : "запись"}
+                    </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" render={<Link href={`/games/${game.id}`} />}>
                         Игра

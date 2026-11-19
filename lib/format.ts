@@ -11,7 +11,14 @@ export function parseGameDate(date: string, time = "00:00"): Date {
 }
 
 export function formatDate(date: string, pattern = "d MMMM yyyy"): string {
-  return format(parseISO(date), pattern, { locale: ru });
+  if (!date) return "—";
+  try {
+    const parsed = parseISO(date);
+    if (Number.isNaN(parsed.getTime())) return "—";
+    return format(parsed, pattern, { locale: ru });
+  } catch {
+    return "—";
+  }
 }
 
 export function formatDateTime(date: string, time: string): string {

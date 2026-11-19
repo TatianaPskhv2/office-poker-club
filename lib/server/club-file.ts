@@ -20,7 +20,12 @@ async function readState(): Promise<ClubState> {
   try {
     const raw = await readFile(FILE, "utf8");
     const parsed = JSON.parse(raw) as ClubState;
-    return recomputeClubState(migrateState({ ...createSeedState(), ...parsed }));
+    const next = recomputeClubState(migrateState({ ...createSeedState(), ...parsed }));
+    const dropped =
+      (parsed.players?.length ?? 0) !== next.players.length ||
+      (parsed.users?.length ?? 0) !== next.users.length;
+    if (dropped) await writeState(next);
+    return next;
   } catch {
     const seed = createSeedState();
     await mkdir(path.dirname(FILE), { recursive: true });

@@ -11,5 +11,14 @@ export function normalizeName(name: string) {
 }
 
 export function nameKey(name: string) {
-  return normalizeName(name).split(" ").filter(Boolean).sort().join(" ");
+  return normalizeName(name)
+    .replaceAll("ё", "е")
+    .split(" ")
+    .filter(Boolean)
+    .sort()
+    .join(" ");
+}
+
+export function isTestHusbandName(name: string) {
+  return nameKey(name) === nameKey("Посохов Артем");
 }

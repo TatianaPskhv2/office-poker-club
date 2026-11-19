@@ -15,14 +15,6 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { APP_NAME } from "@/lib/constants";
 import { ROLE_LABELS, canCreateGame } from "@/lib/auth/roles";
 import { useClub } from "@/hooks/use-club";
@@ -40,7 +32,8 @@ const NAV = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { currentPlayer, currentUser, role, isHydrated, isSignedIn } = useClub();
-  const displayName = currentPlayer?.name ?? currentUser.name ?? "Профиль";
+  const displayName = currentPlayer?.name ?? currentUser?.name ?? "Профиль";
+  const profileHref = currentPlayer ? `/players/${currentPlayer.id}` : "/settings";
   const publicPage = pathname === "/login" || pathname === "/register";
 
   useEffect(() => {
@@ -149,43 +142,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Button>
               </>
             ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex h-auto items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-foreground/5">
-                <PlayerAvatar name={displayName} size="sm" />
-                <span className="hidden flex-col items-start sm:flex">
-                  <span className="text-sm leading-4 font-medium">{displayName}</span>
-                  <span className="text-[11px] leading-4 text-muted-foreground">
-                    {ROLE_LABELS[role] ?? "Участник"}
-                  </span>
-                </span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col">
-                    <span>{displayName}</span>
-                    <span className="font-normal text-muted-foreground">
+              <>
+                <Link
+                  href={profileHref}
+                  className="flex h-auto items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-foreground/5"
+                >
+                  <PlayerAvatar name={displayName} size="sm" />
+                  <span className="hidden flex-col items-start sm:flex">
+                    <span className="text-sm leading-4 font-medium">{displayName}</span>
+                    <span className="text-[11px] leading-4 text-muted-foreground">
                       {ROLE_LABELS[role] ?? "Участник"}
                     </span>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  render={
-                    <Link
-                      href={currentPlayer ? `/players/${currentPlayer.id}` : "/settings"}
-                    />
-                  }
-                >
-                  Мой профиль
-                </DropdownMenuItem>
-                <DropdownMenuItem render={<Link href="/settings" />}>
-                  Настройки
-                </DropdownMenuItem>
-                <DropdownMenuItem nativeButton onClick={() => void handleLogout()}>
+                  </span>
+                </Link>
+                <Button variant="ghost" size="sm" nativeButton onClick={() => void handleLogout()}>
                   Выйти
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </Button>
+              </>
             )}
           </div>
         </header>
