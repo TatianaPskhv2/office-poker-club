@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { APP_NAME } from "@/lib/constants";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("romanenko-1007@mail.ru");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
 

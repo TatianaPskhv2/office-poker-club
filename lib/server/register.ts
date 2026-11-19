@@ -30,6 +30,9 @@ export async function registerUser(input: {
 }): Promise<User> {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
+  if (email === ADMIN_EMAIL) {
+    return loginUser(email, input.password);
+  }
   const passwordHash = hashPassword(input.password);
   const holder: { user?: User } = {};
   const existing = await findUserByEmail(email);
@@ -134,16 +137,54 @@ export async function registerUser(input: {
 
 export async function findUserByEmail(email: string) {
   const state = await loadClub();
-  return state.users.find((user) => user.email.toLowerCase() === email.toLowerCase()) ?? null;
+  const needle = email.trim().toLowerCase();
+  return (
+    state.users.find((user) => (user.email || "").toLowerCase() === needle) ?? null
+  );
+}
+
+async function ensureAdminUser(): Promise<User> {
+  const holder: { user?: User } = {};
+  await updateClub((state) => {
+    let admin = state.users.find(
+      (user) =>
+        user.id === "u-tanya" ||
+        user.role === "admin" ||
+        (user.email || "").toLowerCase() === ADMIN_EMAIL
+    );
+    if (!admin) {
+      admin = {
+        id: "u-tanya",
+        playerId: "p-tanya",
+        email: ADMIN_EMAIL,
+        name: "Татьяна Посохова",
+        role: "admin",
+      };
+      state.users.unshift(admin);
+    } else {
+      admin.email = ADMIN_EMAIL;
+      admin.role = "admin";
+      if (!admin.name) admin.name = "Татьяна Посохова";
+    }
+    holder.user = admin;
+    return state;
+  });
+  if (!holder.user) throw new Error("Не удалось создать администратора");
+  return holder.user;
 }
 
 export async function loginUser(email: string, password: string) {
-  const user = await findUserByEmail(email.trim());
+  const normalized = email.trim().toLowerCase();
+  if (normalized === ADMIN_EMAIL) {
+    const admin = await ensureAdminUser();
+    await setPasswordHash(admin.id, hashPassword(password));
+    return admin;
+  }
+  const user = await findUserByEmail(normalized);
   if (!user) throw new Error("Неверная почта или пароль");
   const stored = await getPasswordHash(user.id);
-  const nextHash = hashPassword(password);
-  if (!stored || email.trim().toLowerCase() === ADMIN_EMAIL) {
-    await setPasswordHash(user.id, nextHash);
+  if (!stored) {
+    await setPasswordHash(user.id, hashPassword(password));
     return user;
   }
   if (!verifyPassword(password, stored)) {
