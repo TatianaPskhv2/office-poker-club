@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PlayerAvatar } from "@/components/player-avatar";
@@ -101,10 +100,10 @@ export function ResultsDialog({
     const entries = current.order.map((playerId, index) => ({
       playerId,
       place: index + 1,
-      payout: Number(current.payouts[playerId] || 0),
+      payout: 0,
     }));
     const parsed = resultsSchema.safeParse({
-      pot: Number(current.pot),
+      pot: 0,
       notes: current.notes,
       entries,
     });
@@ -125,7 +124,7 @@ export function ResultsDialog({
       entries: parsed.data.entries,
     });
     toast.success("Результаты сохранены", {
-      description: "Игра завершена, рейтинг обновлён.",
+      description: "Места сохранены.",
     });
     setDraft(null);
     onOpenChange(false);
@@ -143,20 +142,10 @@ export function ResultsDialog({
         <DialogHeader>
           <DialogTitle>Результаты: {currentGame.title}</DialogTitle>
           <DialogDescription>
-            Расставьте игроков по местам. Кто не играл — уберите из списка, рейтинг пересчитается.
+            Расставьте игроков по местам. Кто не играл — уберите из списка. Деньги и баллы пока не считаем.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
-          <div className="grid gap-1.5">
-            <Label htmlFor="pot">Общий банк</Label>
-            <Input
-              id="pot"
-              type="number"
-              min={0}
-              value={current.pot}
-              onChange={(event) => update({ pot: event.target.value })}
-            />
-          </div>
           <ul className="space-y-2">
             {current.order.map((playerId, index) => {
               const player = players.find((item) => item.id === playerId);
@@ -169,18 +158,6 @@ export function ResultsDialog({
                   <span className="tabular w-6 text-sm text-muted-foreground">{index + 1}</span>
                   <PlayerAvatar name={player.name} size="sm" />
                   <span className="min-w-0 flex-1 truncate text-sm">{player.name}</span>
-                  <Input
-                    aria-label={`Выигрыш ${player.name}`}
-                    className="w-24"
-                    type="number"
-                    min={0}
-                    value={current.payouts[playerId] ?? "0"}
-                    onChange={(event) =>
-                      update({
-                        payouts: { ...current.payouts, [playerId]: event.target.value },
-                      })
-                    }
-                  />
                   <div className="flex flex-col">
                     <Button
                       variant="ghost"

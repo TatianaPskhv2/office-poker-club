@@ -4,7 +4,7 @@ import { GlassPanel } from "@/components/glass-panel";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { RatingBadge } from "@/components/rating-badge";
 import { BADGES } from "@/lib/constants";
-import { formatPercent, formatSigned } from "@/lib/format";
+import { formatPercent, formatPlace } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Player } from "@/types";
 
@@ -53,7 +53,7 @@ export function PlayerCard({
           </div>
         </dl>
         <div className="mt-3 flex items-center justify-between gap-2 text-sm text-muted-foreground">
-          <span className="truncate">Средний результат {formatSigned(player.averageResult)} ₽</span>
+          <span className="truncate">Среднее место {formatPlace(player.averagePosition)}</span>
           <span className="shrink-0">
             {player.currentStreak >= 2
               ? `серия ${player.currentStreak}`

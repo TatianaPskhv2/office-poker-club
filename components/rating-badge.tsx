@@ -4,11 +4,10 @@ import type { GameStatus } from "@/types";
 
 export function RatingBadge({
   rank,
-  rating,
   className,
 }: {
   rank: number;
-  rating: number;
+  rating?: number;
   className?: string;
 }) {
   const gold = rank === 1;
@@ -21,9 +20,9 @@ export function RatingBadge({
       )}
     >
       <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-        #{rank}
+        место в клубе
       </span>
-      <span className="tabular text-lg font-medium leading-none">{rating}</span>
+      <span className="tabular text-lg font-medium leading-none">#{rank}</span>
     </div>
   );
 }

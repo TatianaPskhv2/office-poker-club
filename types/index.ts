@@ -150,6 +150,7 @@ export type LeaderboardRow = {
   wins: number;
   winRate: number;
   averageResult: number;
+  averagePosition: number;
   bestStreak: number;
 };
 

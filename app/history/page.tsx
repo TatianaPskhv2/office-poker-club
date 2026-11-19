@@ -28,10 +28,9 @@ import { downloadCsv, historyToCsv } from "@/lib/csv";
 import {
   completedGames,
   getGamePlayers,
-  getGamePot,
   getWinner,
 } from "@/lib/data/selectors";
-import { formatDate, formatDuration, formatMoney } from "@/lib/format";
+import { formatDate, formatDuration } from "@/lib/format";
 
 export default function HistoryPage() {
   const { state, isHydrated } = useClub();
@@ -127,7 +126,6 @@ export default function HistoryPage() {
                 <TableHead>Место</TableHead>
                 <TableHead>Победитель</TableHead>
                 <TableHead>Игроки</TableHead>
-                <TableHead>Банк</TableHead>
                 <TableHead>Длительность</TableHead>
                 <TableHead></TableHead>
               </TableRow>
@@ -142,7 +140,6 @@ export default function HistoryPage() {
                     <TableCell className="max-w-48 truncate">{game.venueName}</TableCell>
                     <TableCell className="max-w-40 truncate">{winner?.name ?? "—"}</TableCell>
                     <TableCell className="tabular">{count}</TableCell>
-                    <TableCell className="tabular">{formatMoney(getGamePot(state, game), game.currency)}</TableCell>
                     <TableCell>{formatDuration(game.duration)}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" render={<Link href={`/games/${game.id}`} />}>

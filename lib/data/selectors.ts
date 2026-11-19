@@ -64,9 +64,17 @@ export function completedGames(state: ClubState): Game[] {
 }
 
 export function rankedPlayers(state: ClubState): Player[] {
-  return [...state.players].sort(
-    (a, b) => b.rating - a.rating || b.wins - a.wins || a.name.localeCompare(b.name, "ru")
-  );
+  return [...state.players].sort((a, b) => {
+    if ((a.gamesPlayed === 0) !== (b.gamesPlayed === 0)) {
+      return a.gamesPlayed === 0 ? 1 : -1;
+    }
+    if (a.gamesPlayed === 0) return a.name.localeCompare(b.name, "ru");
+    return (
+      a.averagePosition - b.averagePosition ||
+      b.wins - a.wins ||
+      a.name.localeCompare(b.name, "ru")
+    );
+  });
 }
 
 export function playerRank(state: ClubState, playerId: string): number {
@@ -141,6 +149,14 @@ function periodRows(
               return sum + (item.payout - (game?.buyIn ?? 0));
             }, 0) / gamesPlayed
           );
+    const averagePosition =
+      gamesPlayed === 0
+        ? 0
+        : Number(
+            (
+              playerResults.reduce((sum, item) => sum + item.place, 0) / gamesPlayed
+            ).toFixed(2)
+          );
     return {
       player,
       rank: 0,
@@ -152,15 +168,23 @@ function periodRows(
       wins,
       winRate: gamesPlayed === 0 ? 0 : wins / gamesPlayed,
       averageResult,
+      averagePosition,
       bestStreak: player.bestStreak,
     };
   });
 
   return rows
-    .sort(
-      (a, b) =>
-        b.rating - a.rating || b.wins - a.wins || a.player.name.localeCompare(b.player.name, "ru")
-    )
+    .sort((a, b) => {
+      if ((a.gamesPlayed === 0) !== (b.gamesPlayed === 0)) {
+        return a.gamesPlayed === 0 ? 1 : -1;
+      }
+      if (a.gamesPlayed === 0) return a.player.name.localeCompare(b.player.name, "ru");
+      return (
+        a.averagePosition - b.averagePosition ||
+        b.wins - a.wins ||
+        a.player.name.localeCompare(b.player.name, "ru")
+      );
+    })
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 

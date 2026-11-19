@@ -25,7 +25,6 @@ import { ShareLiveLink } from "@/components/share-live-link";
 import { abortLiveSession } from "@/lib/live/client";
 import { liveResultEntries, prizePool } from "@/lib/live/logic";
 import { liveShareUrl } from "@/lib/share-url";
-import { formatSigned } from "@/lib/format";
 import type { LivePlayer, LiveSession } from "@/types";
 
 export function LiveTable({ id }: { id: string }) {
@@ -250,7 +249,6 @@ export function LiveTable({ id }: { id: string }) {
                   {player.potsWon > 0 ? ` · ${player.potsWon} ${session.currency}` : ""}
                 </p>
               </div>
-              <span className="tabular text-sm text-[#22c55e]">{formatSigned(player.ratingPreview)}</span>
               {live && (
                 <div className="flex flex-col gap-1">
                   <Button
@@ -285,7 +283,6 @@ export function LiveTable({ id }: { id: string }) {
                 <span className="tabular w-8 text-sm">{player.place} м.</span>
                 <PlayerAvatar name={player.name} size="sm" />
                 <span className="min-w-0 flex-1 truncate">{player.name}</span>
-                <span className="tabular text-sm">{formatSigned(player.ratingPreview)}</span>
               </li>
             ))}
           </ul>

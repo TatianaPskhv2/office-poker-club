@@ -20,13 +20,13 @@ import { useClub } from "@/hooks/use-club";
 import { canManagePlayers } from "@/lib/auth/roles";
 import { rankedPlayers } from "@/lib/data/selectors";
 
-type SortKey = "rating" | "wins" | "games" | "winRate" | "name";
+type SortKey = "place" | "wins" | "games" | "winRate" | "name";
 
 export default function PlayersPage() {
   const { state, isHydrated, role } = useClub();
   const [query, setQuery] = useState("");
   const [department, setDepartment] = useState("all");
-  const [sort, setSort] = useState<SortKey>("rating");
+  const [sort, setSort] = useState<SortKey>("place");
   const [createOpen, setCreateOpen] = useState(false);
   const ranks = useMemo(() => {
     const map = new Map<string, number>();
@@ -52,7 +52,10 @@ export default function PlayersPage() {
         if (sort === "wins") return b.wins - a.wins;
         if (sort === "games") return b.gamesPlayed - a.gamesPlayed;
         if (sort === "winRate") return b.winRate - a.winRate;
-        return b.rating - a.rating;
+        if ((a.gamesPlayed === 0) !== (b.gamesPlayed === 0)) {
+          return a.gamesPlayed === 0 ? 1 : -1;
+        }
+        return a.averagePosition - b.averagePosition || b.wins - a.wins;
       });
   }, [state.players, query, department, sort]);
 
@@ -99,7 +102,7 @@ export default function PlayersPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="rating">По рейтингу</SelectItem>
+            <SelectItem value="place">По среднему месту</SelectItem>
             <SelectItem value="wins">По победам</SelectItem>
             <SelectItem value="games">По количеству игр</SelectItem>
             <SelectItem value="winRate">По win rate</SelectItem>

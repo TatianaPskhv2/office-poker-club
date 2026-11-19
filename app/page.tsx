@@ -17,11 +17,9 @@ import { Button } from "@/components/ui/button";
 import { useClub } from "@/hooks/use-club";
 import { canCreateGame, canEnterResults, canRsvp } from "@/lib/auth/roles";
 import {
-  averagePot,
   completedGames,
   gamesByMonth,
   getGamePlayers,
-  getGamePot,
   getWinner,
   isSignedUp,
   nextGame,
@@ -30,7 +28,6 @@ import {
 import {
   formatCompactRelative,
   formatDate,
-  formatMoney,
   formatMonthShort,
   formatPercent,
 } from "@/lib/format";
@@ -163,14 +160,14 @@ export default function DashboardPage() {
           value={state.players.filter((player) => player.gamesPlayed > 0).length}
         />
         <StatsCard
-          label="Средний банк"
-          value={formatMoney(averagePot(state))}
+          label="Среднее место лидера"
+          value={leader?.averagePosition ? String(leader.averagePosition) : "—"}
           tone="gold"
         />
         <StatsCard
-          label="Лидер рейтинга"
+          label="Лидер по местам"
           value={leader?.name ?? "—"}
-          hint={leader ? `${leader.rating} очков` : undefined}
+          hint={leader ? `среднее место ${leader.averagePosition || "—"}` : undefined}
           tone="win"
           valueClassName="text-[22px] sm:text-[24px]"
         />
@@ -180,7 +177,7 @@ export default function DashboardPage() {
         <section className="glass-panel rounded-2xl p-5">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold">Текущий рейтинг</h2>
+              <h2 className="text-base font-semibold">Места за столом</h2>
               <p className="text-sm text-muted-foreground">Топ-5</p>
             </div>
             <Link href="/leaderboard" className="text-sm text-primary hover:underline">
@@ -203,7 +200,9 @@ export default function DashboardPage() {
                         win rate {formatPercent(player.winRate)}
                       </p>
                     </div>
-                    <span className="tabular text-sm font-medium">{player.rating}</span>
+                    <span className="tabular text-sm font-medium">
+                      {player.averagePosition ? `${player.averagePosition} м.` : "—"}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -261,9 +260,6 @@ export default function DashboardPage() {
                     </div>
                     <div className="hidden text-right text-sm sm:block">
                       <p className="tabular">{count} игр.</p>
-                      <p className="tabular text-muted-foreground">
-                        {formatMoney(getGamePot(state, game), game.currency)}
-                      </p>
                     </div>
                     <Button variant="ghost" size="sm" render={<Link href={`/games/${game.id}`} />}>
                       Детали

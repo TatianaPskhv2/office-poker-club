@@ -29,7 +29,7 @@ import { canCancelGame, canEditGame, canEnterResults, canManagePlayers, canRsvp 
 import { abortLiveSession, fetchLiveSession, startLiveSession } from "@/lib/live/client";
 import { liveResultEntries, prizePool } from "@/lib/live/logic";
 import { liveShareUrl } from "@/lib/share-url";
-import { getGamePlayers, getGamePot, getWinner, isSignedUp } from "@/lib/data/selectors";
+import { getGamePlayers, getWinner, isSignedUp } from "@/lib/data/selectors";
 import {
   formatDateTime,
   formatDuration,
@@ -232,9 +232,6 @@ export default function GameDetailsPage({
             <span className="text-sm text-muted-foreground">
               бай-ин {formatMoney(game.buyIn, game.currency)}
             </span>
-            <span className="text-sm text-muted-foreground">
-              банк {formatMoney(getGamePot(state, game), game.currency)}
-            </span>
           </div>
           {game.status === "live" && (
             <div className="mt-5">
@@ -322,7 +319,6 @@ export default function GameDetailsPage({
           <ParticipantsList
             players={players}
             organizerId={game.organizerId}
-            showRating={game.status !== "completed"}
             onRemove={
               canRemovePlayers
                 ? (player) => removeFromGame(player.id, player.name)

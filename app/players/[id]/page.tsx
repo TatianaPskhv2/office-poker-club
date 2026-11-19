@@ -3,7 +3,7 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
-import { GamesByMonthChart, RatingLineChart, ResultsBarChart } from "@/components/charts";
+import { GamesByMonthChart } from "@/components/charts";
 import { PageHeader } from "@/components/page-header";
 import { PageSkeleton } from "@/components/page-skeleton";
 import { PlayerAvatar } from "@/components/player-avatar";
@@ -27,15 +27,13 @@ import {
   monthlyActivityForPlayer,
   playerGameHistory,
   playerRank,
-  ratingSeriesForPlayer,
 } from "@/lib/data/selectors";
 import {
   formatDate,
   formatPercent,
-  formatSigned,
+  formatPlace,
   formatStreak,
 } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 export default function PlayerProfilePage({
   params,
@@ -60,12 +58,7 @@ export default function PlayerProfilePage({
 
   const rank = playerRank(state, player.id);
   const history = playerGameHistory(state, player.id);
-  const rating = ratingSeriesForPlayer(state, player.id);
   const monthly = monthlyActivityForPlayer(state, player.id);
-  const results = history.map((item) => ({
-    date: item.game!.date.slice(5),
-    result: item.result.payout - item.game!.buyIn,
-  }));
 
   return (
     <div>
@@ -99,7 +92,7 @@ export default function PlayerProfilePage({
             </div>
           )}
         </div>
-        <RatingBadge rank={rank} rating={player.rating} />
+        <RatingBadge rank={rank} />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -107,23 +100,12 @@ export default function PlayerProfilePage({
         <StatsCard label="Победы" value={player.wins} tone="win" />
         <StatsCard label="Поражения" value={player.losses} tone="loss" />
         <StatsCard label="Win rate" value={formatPercent(player.winRate)} />
-        <StatsCard label="Средний результат" value={`${formatSigned(player.averageResult)} ₽`} tone={player.averageResult >= 0 ? "win" : "loss"} />
-        <StatsCard label="Лучший результат" value={`${formatSigned(player.bestResult)} ₽`} tone="gold" />
+        <StatsCard label="Среднее место" value={formatPlace(player.averagePosition)} />
         <StatsCard label="Лучшее место" value={player.bestPosition || "—"} />
         <StatsCard label="Серия" value={formatStreak(player.currentStreak)} />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <section className="glass-panel p-5">
-          <h2 className="mb-3 font-heading text-lg">Рейтинг во времени</h2>
-          <RatingLineChart
-            data={rating.map((item) => ({ date: item.date.slice(5), rating: item.rating }))}
-          />
-        </section>
-        <section className="glass-panel p-5">
-          <h2 className="mb-3 font-heading text-lg">Результаты по играм</h2>
-          <ResultsBarChart data={results} />
-        </section>
+      <div className="mt-4 grid gap-4">
         <section className="glass-panel p-5">
           <h2 className="mb-3 font-heading text-lg">Игры по месяцам</h2>
           <GamesByMonthChart
@@ -143,26 +125,19 @@ export default function PlayerProfilePage({
             <TableHeader>
               <TableRow>
                 <TableHead>Дата</TableHead>
+                <TableHead>Игра</TableHead>
                 <TableHead>Место</TableHead>
-                <TableHead>Позиция</TableHead>
-                <TableHead>Результат</TableHead>
-                <TableHead>Рейтинг</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {history.map(({ game, result }) => {
                 if (!game) return null;
-                const profit = result.payout - game.buyIn;
                 return (
                   <TableRow key={result.id}>
                     <TableCell>{formatDate(game.date, "d MMM yyyy")}</TableCell>
-                    <TableCell className="max-w-40 truncate">{game.venueName}</TableCell>
+                    <TableCell className="max-w-48 truncate">{game.title}</TableCell>
                     <TableCell className="tabular">{result.place}</TableCell>
-                    <TableCell className={cn("tabular", profit >= 0 ? "text-win" : "text-loss")}>
-                      {formatSigned(profit)} {game.currency}
-                    </TableCell>
-                    <TableCell className="tabular">{formatSigned(result.ratingDelta)}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" render={<Link href={`/games/${game.id}`} />}>
                         Игра

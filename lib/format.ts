@@ -84,6 +84,11 @@ export function formatSigned(value: number): string {
   return String(value);
 }
 
+export function formatPlace(value: number): string {
+  if (!value) return "—";
+  return value.toLocaleString("ru-RU", { maximumFractionDigits: 1 });
+}
+
 export function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }

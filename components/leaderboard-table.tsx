@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { PlayerAvatar } from "@/components/player-avatar";
 import {
   Table,
@@ -11,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatPercent, formatSigned } from "@/lib/format";
+import { formatPercent, formatPlace } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { LeaderboardRow } from "@/types";
 
@@ -23,13 +22,11 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
           <TableRow>
             <TableHead className="w-16">Место</TableHead>
             <TableHead>Участник</TableHead>
-            <TableHead>Рейтинг</TableHead>
-            <TableHead>Изменение</TableHead>
             <TableHead>Игры</TableHead>
             <TableHead>Победы</TableHead>
             <TableHead>Win rate</TableHead>
-            <TableHead>Средний результат</TableHead>
-            <TableHead>Лучшая серия</TableHead>
+            <TableHead>Среднее место</TableHead>
+            <TableHead>Лучшее место</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -55,52 +52,15 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
                   <span className="truncate">{row.player.name}</span>
                 </Link>
               </TableCell>
-              <TableCell className="tabular font-medium">{row.rating}</TableCell>
-              <TableCell>
-                <RankChange value={row.rankChange} />
-              </TableCell>
               <TableCell className="tabular">{row.gamesPlayed}</TableCell>
               <TableCell className="tabular text-win">{row.wins}</TableCell>
               <TableCell className="tabular">{formatPercent(row.winRate)}</TableCell>
-              <TableCell
-                className={cn(
-                  "tabular",
-                  row.averageResult > 0 && "text-win",
-                  row.averageResult < 0 && "text-loss"
-                )}
-              >
-                {formatSigned(row.averageResult)} ₽
-              </TableCell>
-              <TableCell className="tabular">{Math.max(0, row.bestStreak)}</TableCell>
+              <TableCell className="tabular">{formatPlace(row.averagePosition)}</TableCell>
+              <TableCell className="tabular">{row.player.bestPosition || "—"}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </div>
-  );
-}
-
-function RankChange({ value }: { value: number }) {
-  if (value > 0) {
-    return (
-      <span className="inline-flex items-center gap-1 text-win">
-        <ArrowUpRight className="size-3.5" />
-        {value}
-      </span>
-    );
-  }
-  if (value < 0) {
-    return (
-      <span className="inline-flex items-center gap-1 text-loss">
-        <ArrowDownRight className="size-3.5" />
-        {Math.abs(value)}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 text-muted-foreground">
-      <Minus className="size-3.5" />
-      0
-    </span>
   );
 }
