@@ -53,7 +53,6 @@ export default function RegisterPage() {
               id="name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Житков Евгений"
               required
             />
           </div>
