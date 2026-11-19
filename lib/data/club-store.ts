@@ -247,13 +247,24 @@ export const clubActions = {
     let removed = 0;
     update((state) => {
       const game = state.games.find((item) => item.id === gameId);
-      if (!game || game.status === "completed" || game.status === "live") return state;
+      if (!game || game.status === "live") return state;
       const drop = new Set(playerIds);
-      const before = state.participants.length;
+      const present = new Set<string>();
+      state.participants.forEach((item) => {
+        if (item.gameId === gameId && drop.has(item.playerId)) present.add(item.playerId);
+      });
+      state.results.forEach((item) => {
+        if (item.gameId === gameId && drop.has(item.playerId)) present.add(item.playerId);
+      });
       state.participants = state.participants.filter(
         (item) => !(item.gameId === gameId && drop.has(item.playerId))
       );
-      removed = before - state.participants.length;
+      if (game.status === "completed") {
+        state.results = state.results.filter(
+          (item) => !(item.gameId === gameId && drop.has(item.playerId))
+        );
+      }
+      removed = present.size;
       if (removed > 0) game.updatedAt = stamp();
       return state;
     });

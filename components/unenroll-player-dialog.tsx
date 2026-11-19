@@ -74,7 +74,9 @@ function UnenrollPlayerFields({
       <DialogHeader>
         <DialogTitle>Убрать с игры</DialogTitle>
         <DialogDescription>
-          Отметьте тех, кто не придёт, и снимите их с записи. В клубе они останутся.
+          {game.status === "completed"
+            ? "Отметьте тех, кто не играл. Снимем с записи и из результатов, рейтинг пересчитается. В клубе они останутся."
+            : "Отметьте тех, кто не придёт, и снимите их с записи. В клубе они останутся."}
         </DialogDescription>
       </DialogHeader>
       <div className="grid max-h-72 gap-1 overflow-y-auto">

@@ -83,10 +83,24 @@ export default function GameDetailsPage({
     currentGame.status === "completed" ||
     currentGame.status === "live" ||
     (!signed && currentGame.status === "full" && !currentGame.allowLateJoin);
-  const rosterLocked =
-    currentGame.status === "live" ||
-    currentGame.status === "completed" ||
-    currentGame.status === "cancelled";
+  const rosterClosed =
+    currentGame.status === "live" || currentGame.status === "cancelled";
+  const canAddPlayers = canManagePlayers(role) && !rosterClosed && currentGame.status !== "completed";
+  const canRemovePlayers = canManagePlayers(role) && !rosterClosed && players.length > 0;
+
+  function removeFromGame(playerId: string, name: string) {
+    const removed = actions.leavePlayers(currentGame.id, [playerId]);
+    if (removed === 0) {
+      toast.error("Не удалось убрать игрока");
+      return;
+    }
+    toast.success("Сняли с игры", {
+      description:
+        currentGame.status === "completed"
+          ? `${name} убран(а) из записи и результатов. Рейтинг пересчитан.`
+          : name,
+    });
+  }
 
   async function handleLiveTable() {
     setStarting(true);
@@ -278,16 +292,18 @@ export default function GameDetailsPage({
         <section className="glass-panel p-5">
           <div className="mb-2 flex items-center justify-between gap-2">
             <h2 className="font-heading text-lg">Записались</h2>
-            {canManagePlayers(role) && !rosterLocked && (
+            {(canRemovePlayers || canAddPlayers) && (
               <div className="flex flex-wrap gap-1">
-                {players.length > 0 && (
+                {canRemovePlayers && (
                   <Button size="sm" variant="outline" onClick={() => setUnenrollOpen(true)}>
                     Убрать
                   </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => setEnrollOpen(true)}>
-                  Добавить
-                </Button>
+                {canAddPlayers && (
+                  <Button size="sm" variant="outline" onClick={() => setEnrollOpen(true)}>
+                    Добавить
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -296,11 +312,8 @@ export default function GameDetailsPage({
             organizerId={game.organizerId}
             showRating={game.status !== "completed"}
             onRemove={
-              canManagePlayers(role) && !rosterLocked
-                ? (player) => {
-                    actions.leavePlayers(game.id, [player.id]);
-                    toast.success("Сняли с игры", { description: player.name });
-                  }
+              canRemovePlayers
+                ? (player) => removeFromGame(player.id, player.name)
                 : undefined
             }
           />
@@ -321,14 +334,27 @@ export default function GameDetailsPage({
               if (!player) return null;
               return (
                 <li key={result.id}>
-                  <Link
-                    href={`/players/${player.id}`}
-                    className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-foreground/4"
-                  >
-                    <span className="tabular w-6 text-sm text-muted-foreground">{result.place}</span>
-                    <PlayerAvatar name={player.name} />
-                    <span className="min-w-0 flex-1 truncate">{player.name}</span>
-                  </Link>
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href={`/players/${player.id}`}
+                      className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-2 hover:bg-foreground/4"
+                    >
+                      <span className="tabular w-6 text-sm text-muted-foreground">{result.place}</span>
+                      <PlayerAvatar name={player.name} />
+                      <span className="min-w-0 flex-1 truncate">{player.name}</span>
+                    </Link>
+                    {canRemovePlayers && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => removeFromGame(player.id, player.name)}
+                      >
+                        Убрать
+                      </Button>
+                    )}
+                  </div>
                 </li>
               );
             })}
