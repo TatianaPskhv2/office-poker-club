@@ -29,7 +29,7 @@ import { canCancelGame, canEditGame, canEnterResults, canManagePlayers, canRsvp 
 import { abortLiveSession, fetchLiveSession, startLiveSession } from "@/lib/live/client";
 import { liveResultEntries, prizePool } from "@/lib/live/logic";
 import { liveShareUrl } from "@/lib/share-url";
-import { getGamePlayers, getWinner, isSignedUp } from "@/lib/data/selectors";
+import { getGamePlayers, getOrganizerName, getWinner, isSignedUp } from "@/lib/data/selectors";
 import {
   formatDateTime,
   formatDuration,
@@ -55,9 +55,7 @@ export default function GameDetailsPage({
 
   const game = state.games.find((item) => item.id === id);
   const players = game ? getGamePlayers(state, game.id) : [];
-  const organizer = game
-    ? state.players.find((player) => player.id === game.organizerId)
-    : undefined;
+  const organizerName = game ? getOrganizerName(state, game.organizerId) : "—";
   const signed = game && currentPlayer ? isSignedUp(state, game.id, currentPlayer.id) : false;
   const results = game
     ? [...state.results.filter((item) => item.gameId === game.id)].sort((a, b) => a.place - b.place)
@@ -78,6 +76,7 @@ export default function GameDetailsPage({
   const currentGame = game;
   const canManage = canEditGame(role, currentGame.organizerId, currentUser);
   const joinDisabled =
+    !currentPlayer ||
     !canRsvp(role) ||
     currentGame.status === "cancelled" ||
     currentGame.status === "completed" ||
@@ -179,20 +178,22 @@ export default function GameDetailsPage({
         description={`${formatDateTime(game.date, game.startTime)} · ${game.venueName}`}
         actions={
           <>
-            <Button
-              onClick={() => {
-                if (signed) {
-                  actions.leaveGame(game.id);
-                  toast.success("Запись отменена");
-                } else {
-                  actions.joinGame(game.id);
-                  toast.success("Вы записались");
-                }
-              }}
-              disabled={joinDisabled}
-            >
-              {signed ? "Отменить запись" : "Записаться"}
-            </Button>
+            {currentPlayer && (
+              <Button
+                onClick={() => {
+                  if (signed) {
+                    actions.leaveGame(game.id);
+                    toast.success("Запись отменена");
+                  } else {
+                    actions.joinGame(game.id);
+                    toast.success("Вы записались");
+                  }
+                }}
+                disabled={joinDisabled}
+              >
+                {signed ? "Отменить запись" : "Записаться"}
+              </Button>
+            )}
             {canManage && game.status !== "cancelled" && game.status !== "live" && (
               <Button variant="outline" onClick={() => setEditOpen(true)}>
                 Редактировать
@@ -239,7 +240,7 @@ export default function GameDetailsPage({
             </div>
           )}
           <dl className="mt-5 grid gap-3 sm:grid-cols-2">
-            <Info label="Организатор" value={organizer?.name ?? "—"} />
+            <Info label="Организатор" value={organizerName} />
             <Info label="Участники" value={`${players.length}/${game.participantLimit}`} />
             <Info label="Длительность" value={formatDuration(game.duration)} />
             <Info label="Поздняя запись" value={game.allowLateJoin ? "да" : "нет"} />

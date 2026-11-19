@@ -88,16 +88,6 @@
   "currentUserId": "u-tanya",
   "players": [
     {
-      "id": "p-tanya",
-      "userId": "u-tanya",
-      "name": "Татьяна Посохова",
-      "department": "Отдел персонала",
-      "jobTitle": "HR/Администратор",
-      "email": "romanenko-1007@mail.ru",
-      "role": "admin",
-      "joinedAt": "2026-09-17"
-    },
-    {
       "id": "p-y7yqdczqcq",
       "userId": "u-judo4qzqcq",
       "name": "Журавлев Максим",

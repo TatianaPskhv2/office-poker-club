@@ -15,6 +15,13 @@ export function getCurrentUser(state: ClubState) {
   return { user, player, role: player?.role ?? user.role };
 }
 
+export function getOrganizerName(state: ClubState, organizerId: string): string {
+  const player = state.players.find((item) => item.id === organizerId);
+  if (player) return player.name;
+  const user = state.users.find((item) => item.playerId === organizerId);
+  return user?.name ?? "—";
+}
+
 export function getGamePlayers(state: ClubState, gameId: string): Player[] {
   const ids = state.participants
     .filter((item) => item.gameId === gameId)

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useClub } from "@/hooks/use-club";
 import { canCreateGame } from "@/lib/auth/roles";
-import { getGamePlayers } from "@/lib/data/selectors";
+import { getGamePlayers, getOrganizerName } from "@/lib/data/selectors";
 
 type Filter = "all" | "upcoming" | "completed" | "cancelled";
 
@@ -123,7 +123,7 @@ export default function GamesPage() {
             key={game.id}
             game={game}
             players={getGamePlayers(state, game.id)}
-            organizer={state.players.find((player) => player.id === game.organizerId)}
+            organizerName={getOrganizerName(state, game.organizerId)}
           />
         ))}
       </div>

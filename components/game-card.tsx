@@ -11,12 +11,12 @@ import type { Game, Player } from "@/types";
 export function GameCard({
   game,
   players,
-  organizer,
+  organizerName,
   className,
 }: {
   game: Game;
   players: Player[];
-  organizer?: Player;
+  organizerName?: string;
   className?: string;
 }) {
   return (
@@ -54,9 +54,9 @@ export function GameCard({
             <PlayerAvatar key={player.id} name={player.name} size="sm" />
           ))}
         </div>
-        {organizer && (
+        {organizerName && (
           <p className="min-w-0 truncate text-xs text-muted-foreground">
-            орг. {organizer.name}
+            орг. {organizerName}
           </p>
         )}
       </div>

@@ -38,6 +38,14 @@ function clearLegacyStorage() {
   LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
 }
 
+function isClubAdminOnly(person: { id?: string; playerId?: string; name: string }) {
+  return (
+    person.id === "p-tanya" ||
+    person.playerId === "p-tanya" ||
+    person.name === "Татьяна Посохова"
+  );
+}
+
 function migrateState(state: ClubState): ClubState {
   return {
     ...state,
@@ -46,23 +54,17 @@ function migrateState(state: ClubState): ClubState {
       duration: durationInHours(game.duration),
       venueId: "",
     })),
-    players: state.players.map((player) => {
-      const isTanya =
-        player.id === "p-tanya" || player.name === "Татьяна Посохова";
-      if (!isTanya) return player;
-      return {
-        ...player,
-        jobTitle:
-          player.jobTitle === "Product Manager" || !player.jobTitle
-            ? "Администратор"
-            : player.jobTitle,
-        department: player.department === "Product" ? "" : player.department,
-        email: player.email || "romanenko-1007@mail.ru",
-      };
-    }),
+    players: state.players.filter((player) => !isClubAdminOnly(player)),
+    participants: state.participants.filter((item) => item.playerId !== "p-tanya"),
+    results: state.results.filter((item) => item.playerId !== "p-tanya"),
     users: state.users.map((user) =>
       user.id === "u-tanya"
-        ? { ...user, name: "Татьяна Посохова", email: user.email || "romanenko-1007@mail.ru" }
+        ? {
+            ...user,
+            name: "Татьяна Посохова",
+            email: user.email || "romanenko-1007@mail.ru",
+            role: "admin",
+          }
         : user
     ),
   };
